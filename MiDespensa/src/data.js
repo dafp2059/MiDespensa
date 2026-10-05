@@ -1,7 +1,7 @@
-// Datos iniciales de Solufidge: recetas rápidas, categorías y sugerencias.
+// Datos iniciales de Mi Despensa: recetas rápidas, categorías y sugerencias.
 // Las calorías son aproximadas por porción.
 
-const CATEGORIAS = {
+export const CATEGORIAS = {
   carnes: { nombre: 'Carnes y embutidos', tipo: 'comida' },
   verduras: { nombre: 'Frutas y verduras', tipo: 'comida' },
   lacteos: { nombre: 'Lácteos', tipo: 'comida' },
@@ -14,7 +14,7 @@ const CATEGORIAS = {
   otros: { nombre: 'Otros', tipo: 'otro' },
 };
 
-const RECETAS_BASE = [
+export const RECETAS_BASE = [
   {
     id: 'tacos-carne',
     nombre: 'Tacos de carne molida',
@@ -223,7 +223,7 @@ const RECETAS_BASE = [
   },
 ];
 
-const ASEO_SUGERIDOS = [
+export const ASEO_SUGERIDOS = [
   { nombre: 'Papel higiénico', cat: 'aseoPersonal' },
   { nombre: 'Jabón de baño', cat: 'aseoPersonal' },
   { nombre: 'Shampoo', cat: 'aseoPersonal' },
@@ -240,7 +240,7 @@ const ASEO_SUGERIDOS = [
   { nombre: 'Servilletas', cat: 'limpieza' },
 ];
 
-const SNACKS = [
+export const SNACKS = [
   { nombre: 'Manzana', kcal: 95 },
   { nombre: 'Plátano', kcal: 105 },
   { nombre: 'Yogur', kcal: 150 },
@@ -253,6 +253,6 @@ const SNACKS = [
   { nombre: 'Papas fritas (bolsa)', kcal: 230 },
 ];
 
-const EXCLUSIONES_INICIALES = ['pollo', 'huevo', 'camarón', 'frijol'];
+export const EXCLUSIONES_INICIALES = ['pollo', 'huevo', 'camarón', 'frijol'];
 
-const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+export const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
