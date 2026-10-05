@@ -18,10 +18,10 @@ Los datos se guardan solo en el teléfono. No hay cuenta ni servidor. Funciona s
 La app se publica sola en GitHub Pages con el flujo `.github/workflows/pages.yml` cada vez que hay cambios en `master`.
 
 1. En Safari, abre el repositorio en github.com e inicia sesión.
-2. **Settings → General → Danger Zone → Change visibility → Public.** GitHub Pages gratis solo funciona con repositorios públicos. El código no contiene datos personales: tus datos viven solo en tu teléfono.
+2. **Settings → General → Danger Zone → Change visibility → Public** (ya hecho). GitHub Pages gratis solo funciona con repositorios públicos. El código no contiene datos personales: tus datos viven solo en tu teléfono.
 3. **Settings → Pages → Source: GitHub Actions.**
 4. **Actions → Publicar Mi Despensa → Run workflow** (o espera al siguiente cambio).
-5. Abre `https://dafp2059.github.io/Solufidge/` en **Safari**, toca **Compartir → Agregar a pantalla de inicio**.
+5. Abre `https://dafp2059.github.io/MiDespensa/` en **Safari**, toca **Compartir → Agregar a pantalla de inicio**.
 
 ## Estructura
 
