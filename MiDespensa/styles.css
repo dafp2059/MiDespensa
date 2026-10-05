@@ -168,3 +168,11 @@ textarea {
 
 /* En pantallas angostas el selector de categoría no debe aplastar el campo de texto. */
 form[data-form=item] select { width: 32%; max-width: 160px; }
+
+details.card > summary { cursor: pointer; list-style: none; }
+details.card > summary::-webkit-details-marker { display: none; }
+details.card ul { margin: 6px 0; padding-left: 20px; font-size: 14px; }
+.chips-scroll { display: flex; overflow-x: auto; gap: 0; padding: 10px 0 4px; -webkit-overflow-scrolling: touch; }
+.chips-scroll .chip { flex-shrink: 0; white-space: nowrap; }
+.chip.sel { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn:disabled { opacity: .55; cursor: default; }

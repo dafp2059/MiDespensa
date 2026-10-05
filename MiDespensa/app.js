@@ -47,16 +47,24 @@ const PALABRAS_CATEGORIA = {
   lacteos: ['queso', 'leche', 'yogur', 'crema', 'mantequilla', 'panela'],
   panaderia: ['tortilla', 'pan', 'tostada', 'bolillo'],
   congelados: ['congelad', 'helado', 'hielo'],
+  bebidas: ['agua', 'refresco', 'jugo', 'cerveza', 'bebida'],
   salsas: ['salsa', 'soya', 'chipotle', 'mayonesa', 'catsup', 'mostaza', 'sal de mesa', 'pimienta', 'consome', 'vinagre'],
   alacena: ['arroz', 'atun', 'pasta', 'aceite', 'azucar', 'cafe', 'galleta', 'cereal', 'sardina', 'lata', 'avena', 'harina', 'lenteja', 'garbanzo'],
   aseoPersonal: ['papel higienico', 'jabon de bano', 'shampoo', 'champu', 'pasta dental', 'cepillo', 'desodorante', 'rastrillo', 'crema corporal', 'hilo dental', 'toalla femenina'],
   limpieza: ['detergente', 'cloro', 'lavatrastes', 'limpiador', 'bolsa', 'esponja', 'suavizante', 'servilleta', 'escoba', 'trapeador', 'fibra', 'jabon'],
 };
 
+function buscarEnCatalogo(nombre) {
+  const n = norm(nombre);
+  return CATALOGO.find((x) => norm(x.n) === n);
+}
+
 function adivinarCategoria(nombre) {
+  const delCatalogo = buscarEnCatalogo(nombre);
+  if (delCatalogo) return delCatalogo.c;
   const n = norm(nombre);
   // Aseo primero para que "pasta dental" no caiga en alacena.
-  for (const cat of ['aseoPersonal', 'limpieza', 'carnes', 'salsas', 'verduras', 'lacteos', 'panaderia', 'congelados', 'alacena']) {
+  for (const cat of ['aseoPersonal', 'limpieza', 'carnes', 'bebidas', 'salsas', 'verduras', 'lacteos', 'panaderia', 'congelados', 'alacena']) {
     if (PALABRAS_CATEGORIA[cat].some((p) => n.includes(p))) return cat;
   }
   return 'otros';
@@ -140,17 +148,31 @@ function generarMenu() {
 
 // ---------- Mercado ----------
 
-function agregarAlMercado(nombre, cat) {
+// Devuelve true si el producto se agregó (o se volvió a marcar como pendiente).
+function agregarAlMercado(nombre, cat, cant) {
   nombre = nombre.trim();
   if (!nombre) return false;
+  cant = cant ?? buscarEnCatalogo(nombre)?.q ?? '';
   const existente = S.mercado.find((i) => norm(i.nombre) === norm(nombre));
   if (existente) {
+    if (cant && !existente.cant) existente.cant = cant;
     if (!existente.hecho) return false;
     existente.hecho = false;
     return true;
   }
-  S.mercado.push({ id: uid(), nombre, cat: cat || adivinarCategoria(nombre), hecho: false });
+  S.mercado.push({ id: uid(), nombre, cat: cat || adivinarCategoria(nombre), cant, hecho: false });
   return true;
+}
+
+function catalogoPermitido() {
+  return CATALOGO.filter((x) => !S.exclusiones.some((ex) => norm(x.n).includes(norm(ex))));
+}
+
+function agregarMercadoDelMes() {
+  let n = 0;
+  catalogoPermitido().filter((x) => x.mes).forEach((x) => { if (agregarAlMercado(x.n, x.c, x.q)) n++; });
+  guardar();
+  toast(n ? `${n} productos del mes agregados` : 'Ya tienes todo el mercado del mes en la lista');
 }
 
 function ingredientesAlMercado(recetas) {
@@ -163,7 +185,7 @@ function ingredientesAlMercado(recetas) {
 function textoLista() {
   const pendientes = S.mercado.filter((i) => !i.hecho);
   const grupos = {};
-  pendientes.forEach((i) => (grupos[i.cat] ||= []).push(i.nombre));
+  pendientes.forEach((i) => (grupos[i.cat] ||= []).push(i.cant ? `${i.nombre} (${i.cant})` : i.nombre));
   return Object.keys(CATEGORIAS)
     .filter((c) => grupos[c])
     .map((c) => `${CATEGORIAS[c].nombre}:\n${grupos[c].map((n) => `- ${n}`).join('\n')}`)
@@ -310,14 +332,47 @@ function renderMercado() {
           <div class="item ${i.hecho ? 'done' : ''}">
             <input type="checkbox" data-change="toggle-item" data-id="${i.id}" ${i.hecho ? 'checked' : ''} aria-label="${esc(i.nombre)}">
             <span class="name grow">${esc(i.nombre)}</span>
+            ${i.cant ? `<span class="muted">${esc(i.cant)}</span>` : ''}
             <button class="x" data-action="borrar-item" data-id="${i.id}" aria-label="Quitar">✕</button>
           </div>`).join('')}
       </div>`;
   }).join('');
 
-  const sugeridos = f === 'comida' ? '' : `
-    <h3>Aseo y limpieza rápidos</h3>
-    <div>${ASEO_SUGERIDOS.map((a, k) => `<span class="chip" data-action="add-sugerido" data-k="${k}">+ ${esc(a.nombre)}</span>`).join('')}</div>`;
+  const catalogo = catalogoPermitido();
+  const delMes = catalogo.filter((x) => x.mes);
+  const enLista = new Set(S.mercado.filter((i) => !i.hecho).map((i) => norm(i.nombre)));
+  const cats = Object.keys(CATEGORIAS).filter((k) => visible(k) && catalogo.some((x) => x.c === k));
+  const catSel = cats.includes(ui.catCatalogo) ? ui.catCatalogo : cats[0];
+
+  const mes = `
+    <details class="card mes">
+      <summary class="row spread">
+        <strong>🗓️ Mercado del mes</strong>
+        <span class="badge">${delMes.length} productos</span>
+      </summary>
+      <p class="muted">Lista recomendada para una persona durante un mes, sin verdura que se eche a perder: carne para congelar, congelados, latas y frutas o verduras que aguantan.</p>
+      <h3>Consejos para que no se pierda nada</h3>
+      <ul>${CONSEJOS_MES.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
+    </details>
+    <button class="btn primary" style="width:100%;margin-bottom:12px" data-action="mercado-mes">🛒 Agregar mercado del mes</button>`;
+
+  const explorar = `
+    <details class="card" ${ui.catalogoAbierto ? 'open' : ''} data-toggle="catalogo">
+      <summary class="row spread"><strong>📦 Explorar productos</strong><span class="badge">${catalogo.length}</span></summary>
+      <div class="chips-scroll">${cats.map((k) =>
+        `<span class="chip ${k === catSel ? 'sel' : ''}" data-action="cat-catalogo" data-cat="${k}">${CATEGORIAS[k].nombre}</span>`).join('')}</div>
+      ${catalogo.filter((x) => x.c === catSel).map((x) => {
+        const ya = enLista.has(norm(x.n));
+        return `
+        <div class="item">
+          <div class="grow">
+            <div>${esc(x.n)}${x.mes ? ' <span class="badge">del mes</span>' : ''}</div>
+            <div class="muted">${esc(x.q)}${x.nota ? ` · ${esc(x.nota)}` : ''}</div>
+          </div>
+          <button class="btn small ${ya ? '' : 'primary'}" data-action="add-catalogo" data-n="${esc(x.n)}" ${ya ? 'disabled' : ''}>${ya ? '✓' : '+'}</button>
+        </div>`;
+      }).join('')}
+    </details>`;
 
   $('#tab-mercado').innerHTML = `
     <div class="row spread"><h2>Lista del mercado</h2><span class="muted">${pendientes} pendiente(s)</span></div>
@@ -326,21 +381,27 @@ function renderMercado() {
         `<button data-action="filtro-mercado" data-f="${k}" class="${f === k ? 'active' : ''}">${t}</button>`).join('')}
     </div>
     <form class="row" data-form="item" style="margin-bottom:8px">
-      <input name="nombre" placeholder="Agregar producto…" class="grow" autocomplete="off" required>
+      <input name="nombre" placeholder="Agregar producto…" class="grow" autocomplete="off" list="lista-catalogo" required>
+      <datalist id="lista-catalogo">${catalogo.map((x) => `<option value="${esc(x.n)}"></option>`).join('')}</datalist>
       <select name="cat" aria-label="Categoría">
         <option value="">Auto</option>
         ${Object.entries(CATEGORIAS).map(([k, c]) => `<option value="${k}">${c.nombre}</option>`).join('')}
       </select>
       <button class="btn primary">+</button>
     </form>
-    ${sugeridos}
-    ${grupos || '<p class="empty">La lista está vacía. Agrega productos o usa “Pasar al mercado” en el Menú.</p>'}
+    ${f === 'aseo' ? '' : mes}
+    ${explorar}
+    ${grupos || '<p class="empty">La lista está vacía. Usa “Agregar mercado del mes”, explora productos o usa “Pasar al mercado” en el Menú.</p>'}
     ${S.mercado.length ? `
       <div class="row wrap" style="margin-top:12px">
         <button class="btn" data-action="compartir-lista">📤 Compartir / copiar</button>
         <button class="btn" data-action="borrar-comprados">Borrar comprados</button>
         <button class="btn danger" data-action="vaciar-lista">Vaciar lista</button>
       </div>` : ''}`;
+
+  // Mantiene visible la categoría elegida en la fila de categorías.
+  const sel = $('#tab-mercado .chips-scroll .sel');
+  if (sel) sel.parentElement.scrollLeft = sel.offsetLeft - sel.parentElement.offsetLeft - 16;
 }
 
 function renderCalorias() {
@@ -469,9 +530,10 @@ const acciones = {
     guardar();
   },
   'filtro-mercado': (d) => { ui.filtroMercado = d.f; renderMercado(); },
-  'add-sugerido': (d) => {
-    const a = ASEO_SUGERIDOS[d.k];
-    toast(agregarAlMercado(a.nombre, a.cat) ? `${a.nombre} agregado` : 'Ya está en la lista');
+  'mercado-mes': agregarMercadoDelMes,
+  'cat-catalogo': (d) => { ui.catCatalogo = d.cat; renderMercado(); },
+  'add-catalogo': (d) => {
+    toast(agregarAlMercado(d.n) ? `${d.n} agregado` : 'Ya está en la lista');
     guardar();
   },
   'borrar-item': (d) => { S.mercado = S.mercado.filter((i) => i.id !== d.id); guardar(); },
@@ -513,6 +575,11 @@ document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-action]');
   if (el && acciones[el.dataset.action]) acciones[el.dataset.action](el.dataset);
 });
+
+// <details> no propaga "toggle"; se escucha en captura para recordar si el catálogo está abierto.
+document.addEventListener('toggle', (e) => {
+  if (e.target.dataset?.toggle === 'catalogo') ui.catalogoAbierto = e.target.open;
+}, true);
 
 document.addEventListener('change', (e) => {
   const el = e.target.closest('[data-change]');
