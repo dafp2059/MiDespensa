@@ -7,6 +7,7 @@ App web instalable (PWA) para organizar la comida de una persona que vive sola y
 - **Menú semanal:** genera un menú de lunes a domingo con recetas de 15 minutos o menos, sin repetir platillos. También puedes elegir cada día a mano.
 - **Recetas:** cada receta trae ingredientes, pasos, tiempo y calorías aproximadas. Puedes agregar recetas propias.
 - **Lista del mercado:** pasa los ingredientes del menú a la lista con un botón. Incluye aseo personal y limpieza con productos sugeridos, filtros (Todo / Comida / Aseo) y opción para compartir por WhatsApp, Notas, etc.
+- **Despensa:** inventario de lo que tienes en casa. Lo comprado en el mercado se suma solo; vas restando lo que usas, te avisa qué está por acabarse y lo agotado pasa solo a la lista. Cada producto puede tener foto.
 - **Calorías:** meta diaria, registro rápido desde recetas, antojos frecuentes o texto libre, y gráfica de los últimos 7 días.
 - **Alimentos excluidos:** de entrada no usa pollo, huevo, camarón ni frijoles. Se cambia en Ajustes.
 - **Respaldo:** exporta e importa tus datos (en iPhone se pueden guardar en Archivos o iCloud).
@@ -31,6 +32,7 @@ La app se publica sola en GitHub Pages con el flujo `.github/workflows/pages.yml
 | `MiDespensa/styles.css` | Estilos, con modo claro y oscuro |
 | `MiDespensa/data.js` | Recetas, categorías, productos de aseo y antojos |
 | `MiDespensa/app.js` | Lógica de la app |
+| `MiDespensa/despensa.js` | Inventario y fotos (las fotos se guardan en IndexedDB) |
 | `MiDespensa/sw.js`, `manifest.webmanifest`, `icons/` | Instalación como app y uso sin conexión |
 
 Para cambiar o agregar recetas que vienen incluidas, edita `RECETAS_BASE` en `MiDespensa/data.js`.

@@ -81,6 +81,8 @@ function estadoInicial() {
     mercado: [],
     meta: 2000,
     registro: [],
+    despensa: [],
+    autoLista: true,
   };
 }
 
@@ -485,13 +487,19 @@ function renderAjustes() {
       <p class="muted">Las recetas con estos ingredientes no aparecen en el menú.</p>
     </div>
 
+    <h3>Despensa</h3>
+    <div class="card">
+      <label class="row"><input type="checkbox" data-change="auto-lista" ${S.autoLista !== false ? 'checked' : ''} style="width:22px;height:22px;accent-color:var(--accent)">
+        <span class="grow">Cuando algo se acabe, agregarlo solo a la lista del mercado</span></label>
+    </div>
+
     <h3>Respaldo</h3>
     <div class="card row wrap">
       <button class="btn" data-action="exportar">⬇️ Exportar datos</button>
       <label class="btn">⬆️ Importar<input type="file" accept="application/json" data-change="importar" hidden></label>
       <button class="btn danger" data-action="reiniciar">Borrar todo</button>
     </div>
-    <p class="muted">Tus datos se guardan solo en este dispositivo. Exporta un respaldo de vez en cuando.</p>`;
+    <p class="muted">Tus datos y fotos se guardan solo en este dispositivo. Exporta un respaldo de vez en cuando (incluye las fotos).</p>`;
 }
 
 function render() {
@@ -500,8 +508,10 @@ function render() {
   renderMercado();
   renderCalorias();
   renderAjustes();
+  renderDespensa();
   const pend = S.mercado.filter((i) => !i.hecho).length;
-  $('#subtitulo').textContent = `${totalDia(fechaKey())}/${S.meta} kcal hoy · ${pend} en lista`;
+  const agotados = S.despensa.filter((i) => estadoInv(i) === 'agotado').length;
+  $('#subtitulo').textContent = `${totalDia(fechaKey())}/${S.meta} kcal hoy · ${pend} en lista${agotados ? ` · ${agotados} agotados` : ''}`;
 }
 
 function irA(tab) {
@@ -514,6 +524,7 @@ function irA(tab) {
 // ---------- Eventos ----------
 
 const acciones = {
+  ...accionesDespensa,
   'generar-menu': generarMenu,
   'limpiar-menu': () => { S.menu = Array(7).fill(null); guardar(); },
   'menu-a-mercado': () => {
@@ -545,7 +556,8 @@ const acciones = {
   'quitar-exclusion': (d) => { S.exclusiones.splice(Number(d.k), 1); guardar(); },
   exportar: async () => {
     const nombre = `mi-despensa-${fechaKey()}.json`;
-    const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+    const respaldo = { ...S, fotos: Object.fromEntries(FOTOS) };
+    const blob = new Blob([JSON.stringify(respaldo)], { type: 'application/json' });
     // En iPhone, compartir el archivo permite guardarlo en Archivos, iCloud o enviarlo.
     const archivo = new File([blob], nombre, { type: 'application/json' });
     if (navigator.canShare?.({ files: [archivo] })) {
@@ -563,7 +575,8 @@ const acciones = {
     URL.revokeObjectURL(a.href);
   },
   reiniciar: () => {
-    if (!confirm('Se borrarán menú, lista, recetas propias y registro de calorías. ¿Continuar?')) return;
+    if (!confirm('Se borrarán menú, lista, despensa, fotos, recetas propias y registro de calorías. ¿Continuar?')) return;
+    [...FOTOS.keys()].forEach((id) => ponerFoto(id, null));
     S = estadoInicial();
     guardar();
   },
@@ -574,6 +587,13 @@ document.addEventListener('click', (e) => {
   if (nav) return irA(nav.dataset.goto);
   const el = e.target.closest('[data-action]');
   if (el && acciones[el.dataset.action]) acciones[el.dataset.action](el.dataset);
+});
+
+document.addEventListener('input', (e) => {
+  if (e.target.dataset?.input === 'buscar-despensa') {
+    ui.buscarDespensa = e.target.value;
+    renderListaDespensa();
+  }
 });
 
 // <details> no propaga "toggle"; se escucha en captura para recordar si el catálogo está abierto.
@@ -592,10 +612,20 @@ document.addEventListener('change', (e) => {
       break;
     case 'toggle-item': {
       const it = S.mercado.find((i) => i.id === d.id);
-      if (it) it.hecho = el.checked;
+      if (it) {
+        it.hecho = el.checked;
+        compraMarcada(it);
+      }
       guardar();
       break;
     }
+    case 'foto':
+      recibirFoto(el.files[0]);
+      break;
+    case 'auto-lista':
+      S.autoLista = el.checked;
+      guardar();
+      break;
     case 'fecha-cal':
       ui.fechaCal = el.value || fechaKey();
       renderCalorias();
@@ -606,7 +636,9 @@ document.addEventListener('change', (e) => {
       file.text().then((txt) => {
         const datos = JSON.parse(txt);
         if (!datos || typeof datos !== 'object' || !Array.isArray(datos.mercado)) throw new Error('formato');
-        S = { ...estadoInicial(), ...datos };
+        const { fotos = {}, ...resto } = datos;
+        S = { ...estadoInicial(), ...resto };
+        Object.entries(fotos).forEach(([id, f]) => ponerFoto(id, f));
         guardar();
         toast('Datos importados');
       }).catch(() => toast('Archivo no válido'));
@@ -620,6 +652,7 @@ document.addEventListener('submit', (e) => {
   if (!form) return;
   e.preventDefault();
   const v = Object.fromEntries(new FormData(form));
+  if (enviarFormDespensa(form, v)) return;
   switch (form.dataset.form) {
     case 'item':
       toast(agregarAlMercado(v.nombre, v.cat) ? 'Agregado' : 'Ya está en la lista');
@@ -669,6 +702,7 @@ document.addEventListener('submit', (e) => {
 
 render();
 irA('menu');
+cargarFotos();
 
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(() => {});

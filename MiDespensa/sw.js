@@ -1,6 +1,6 @@
 // Cache básico para que la app funcione sin internet.
-const CACHE = 'mi-despensa-v1';
-const ARCHIVOS = ['./', 'index.html', 'styles.css', 'data.js', 'app.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
+const CACHE = 'mi-despensa-v2';
+const ARCHIVOS = ['./', 'index.html', 'styles.css', 'data.js', 'despensa.js', 'app.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));

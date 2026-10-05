@@ -25,6 +25,7 @@
     <section id="tab-menu" class="tab" data-tab="menu"></section>
     <section id="tab-recetas" class="tab" data-tab="recetas" hidden></section>
     <section id="tab-mercado" class="tab" data-tab="mercado" hidden></section>
+    <section id="tab-despensa" class="tab" data-tab="despensa" hidden></section>
     <section id="tab-calorias" class="tab" data-tab="calorias" hidden></section>
     <section id="tab-ajustes" class="tab" data-tab="ajustes" hidden></section>
   </main>
@@ -33,13 +34,17 @@
     <button data-goto="menu" class="active"><span aria-hidden="true">📅</span>Menú</button>
     <button data-goto="recetas"><span aria-hidden="true">🍳</span>Recetas</button>
     <button data-goto="mercado"><span aria-hidden="true">🛒</span>Mercado</button>
+    <button data-goto="despensa"><span aria-hidden="true">🏠</span>Despensa</button>
     <button data-goto="calorias"><span aria-hidden="true">🔥</span>Calorías</button>
     <button data-goto="ajustes"><span aria-hidden="true">⚙️</span>Ajustes</button>
   </nav>
 
   <div id="toast" role="status" aria-live="polite"></div>
+  <dialog id="dlg"></dialog>
+  <input type="file" id="camara" accept="image/*" data-change="foto" hidden>
 
   <script src="data.js"></script>
+  <script src="despensa.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
