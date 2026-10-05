@@ -1,7 +1,7 @@
 // Datos iniciales de Mi Despensa: recetas rápidas, categorías y sugerencias.
 // Las calorías son aproximadas por porción.
 
-export const CATEGORIAS = {
+const CATEGORIAS = {
   carnes: { nombre: 'Carnes y embutidos', tipo: 'comida' },
   verduras: { nombre: 'Frutas y verduras', tipo: 'comida' },
   lacteos: { nombre: 'Lácteos', tipo: 'comida' },
@@ -14,7 +14,7 @@ export const CATEGORIAS = {
   otros: { nombre: 'Otros', tipo: 'otro' },
 };
 
-export const RECETAS_BASE = [
+const RECETAS_BASE = [
   {
     id: 'tacos-carne',
     nombre: 'Tacos de carne molida',
@@ -223,7 +223,7 @@ export const RECETAS_BASE = [
   },
 ];
 
-export const ASEO_SUGERIDOS = [
+const ASEO_SUGERIDOS = [
   { nombre: 'Papel higiénico', cat: 'aseoPersonal' },
   { nombre: 'Jabón de baño', cat: 'aseoPersonal' },
   { nombre: 'Shampoo', cat: 'aseoPersonal' },
@@ -240,7 +240,7 @@ export const ASEO_SUGERIDOS = [
   { nombre: 'Servilletas', cat: 'limpieza' },
 ];
 
-export const SNACKS = [
+const SNACKS = [
   { nombre: 'Manzana', kcal: 95 },
   { nombre: 'Plátano', kcal: 105 },
   { nombre: 'Yogur', kcal: 150 },
@@ -253,6 +253,6 @@ export const SNACKS = [
   { nombre: 'Papas fritas (bolsa)', kcal: 230 },
 ];
 
-export const EXCLUSIONES_INICIALES = ['pollo', 'huevo', 'camarón', 'frijol'];
+const EXCLUSIONES_INICIALES = ['pollo', 'huevo', 'camarón', 'frijol'];
 
-export const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];

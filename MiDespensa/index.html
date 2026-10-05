@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2f7d5b">
+  <meta name="description" content="Menú semanal rápido, lista del mercado y aseo, y control de calorías.">
+  <title>Mi Despensa</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Mi Despensa">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Mi Despensa</h1>
+    <span id="subtitulo" class="muted"></span>
+  </header>
+
+  <main id="app">
+    <section id="tab-menu" class="tab" data-tab="menu"></section>
+    <section id="tab-recetas" class="tab" data-tab="recetas" hidden></section>
+    <section id="tab-mercado" class="tab" data-tab="mercado" hidden></section>
+    <section id="tab-calorias" class="tab" data-tab="calorias" hidden></section>
+    <section id="tab-ajustes" class="tab" data-tab="ajustes" hidden></section>
+  </main>
+
+  <nav class="bottomnav" aria-label="Secciones">
+    <button data-goto="menu" class="active"><span aria-hidden="true">📅</span>Menú</button>
+    <button data-goto="recetas"><span aria-hidden="true">🍳</span>Recetas</button>
+    <button data-goto="mercado"><span aria-hidden="true">🛒</span>Mercado</button>
+    <button data-goto="calorias"><span aria-hidden="true">🔥</span>Calorías</button>
+    <button data-goto="ajustes"><span aria-hidden="true">⚙️</span>Ajustes</button>
+  </nav>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
