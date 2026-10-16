@@ -45,7 +45,7 @@ database/schema.sql   Tablas de la base de datos.
 ## Instalación en cPanel
 
 1. **Copia de seguridad del WordPress actual.** En cPanel > Copias de seguridad, descarga una copia completa antes de tocar nada.
-2. **Base de datos.** En cPanel > Bases de datos MySQL, crea una base de datos y un usuario, y dale todos los privilegios. Luego, en phpMyAdmin, selecciona la base y usa **Importar** con `database/schema.sql`.
+2. **Base de datos.** En cPanel > Bases de datos MySQL, crea una base de datos y un usuario, y dale todos los privilegios. Las tablas se crean solas la primera vez que se abre la web (no hace falta importar nada en phpMyAdmin).
 3. **Archivos.** Con el Administrador de archivos o FTP:
    - Sube la carpeta `app/` a tu carpeta de inicio (al lado de `public_html`, **no dentro**).
    - Sube el contenido de `public_html/` dentro de `public_html` (después de mover el WordPress a otra carpeta o eliminarlo).

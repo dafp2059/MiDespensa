@@ -10,6 +10,17 @@ const SCHEMA_VERSION = 2;
 
 function ensure_schema(): void
 {
+    // Base de datos vacía: crear todas las tablas desde database/schema.sql.
+    if (!query("SHOW TABLES LIKE 'users'")->fetch()) {
+        $sql = (string) file_get_contents(dirname(APP_DIR) . '/database/schema.sql');
+        $sql = preg_replace('/^\s*--.*$/m', '', $sql);
+        foreach (preg_split('/;\s*$/m', $sql) as $statement) {
+            if (trim($statement) !== '') {
+                db()->exec($statement);
+            }
+        }
+    }
+
     db()->exec('CREATE TABLE IF NOT EXISTS settings (
         name VARCHAR(60) NOT NULL PRIMARY KEY,
         value MEDIUMTEXT NULL
