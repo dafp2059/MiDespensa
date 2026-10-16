@@ -37,7 +37,9 @@ view('header', compact('page'));
         </dl>
       <?php endif; ?>
       <div class="owners__actions">
-        <?php if (in_array($status, ['DECLINED', 'ERROR', 'VOIDED', null], true)): ?>
+        <?php if (!empty($payment['client_id'])): ?>
+          <a class="btn" href="<?= e(url('mi-cuenta/')) ?>">Volver a Mi cuenta</a>
+        <?php elseif (in_array($status, ['DECLINED', 'ERROR', 'VOIDED', null], true)): ?>
           <a class="btn" href="<?= e(url('pagos')) ?>">Intentar de nuevo</a>
         <?php endif; ?>
         <a class="btn btn--ghost" href="<?= e(whatsapp_link('Hola, tengo una pregunta sobre mi pago' . ($payment ? ' con referencia ' . $payment['reference'] : '') . '.')) ?>" target="_blank" rel="noopener"><?= icon('chat') ?> Escribir por WhatsApp</a>

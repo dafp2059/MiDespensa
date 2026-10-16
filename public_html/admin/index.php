@@ -10,6 +10,12 @@ $counts = query("SELECT
     FROM properties")->fetch();
 $noPhotos = (int) query("SELECT COUNT(*) FROM properties p WHERE p.published = 1 AND NOT EXISTS
     (SELECT 1 FROM images i WHERE i.owner_type = 'property' AND i.owner_id = p.id)")->fetchColumn();
+$overdue = query("SELECT ch.*, ct.code, ct.id AS contract_id, c.name AS client_name, c.phone AS client_phone
+    FROM charges ch JOIN contracts ct ON ct.id = ch.contract_id JOIN clients c ON c.id = ct.client_id
+    WHERE ch.status = 'pendiente' AND ch.due_date < CURDATE() AND ct.status = 'activo' ORDER BY ch.due_date LIMIT 10")->fetchAll();
+$monthPaid = (int) query("SELECT COALESCE(SUM(amount), 0) FROM charges WHERE status = 'pagado' AND paid_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')")->fetchColumn();
+$monthDue = (int) query("SELECT COALESCE(SUM(ch.amount), 0) FROM charges ch JOIN contracts ct ON ct.id = ch.contract_id
+    WHERE ch.status = 'pendiente' AND ct.status = 'activo' AND ch.due_date <= LAST_DAY(CURDATE())")->fetchColumn();
 $messages = query('SELECT m.*, p.title AS property_title FROM messages m LEFT JOIN properties p ON p.id = m.property_id
     ORDER BY m.created_at DESC LIMIT 5')->fetchAll();
 $payments = query("SELECT * FROM payments WHERE status <> 'PENDING' OR created_at > (NOW() - INTERVAL 1 DAY)
@@ -29,6 +35,27 @@ view('admin_header', compact('title'));
   <div class="stat"><span>Vendidos o arrendados</span><strong><?= (int) $counts['cerrados'] ?></strong></div>
   <div class="stat"><span>Ocultos</span><strong><?= (int) $counts['ocultos'] ?></strong></div>
 </div>
+
+<div class="stats">
+  <div class="stat"><span>Recaudado este mes</span><strong><?= e(money($monthPaid, false)) ?></strong></div>
+  <div class="stat"><span>Por cobrar (hasta fin de mes)</span><strong><?= e(money($monthDue, false)) ?></strong></div>
+  <div class="stat"><span>Cuotas vencidas</span><strong<?= $overdue ? ' class="text-danger"' : '' ?>><?= count($overdue) ?><?= count($overdue) === 10 ? '+' : '' ?></strong></div>
+</div>
+
+<?php if ($overdue): ?>
+  <section class="admin-card">
+    <h2>Cuotas vencidas</h2>
+    <ul class="admin-list">
+      <?php foreach ($overdue as $ch): ?>
+        <li class="admin-list__row">
+          <span><strong><?= e($ch['client_name']) ?></strong> · <?= e($ch['description']) ?><br>
+            <span class="muted"><?= e(money($ch['amount'])) ?> · venció el <?= e(fecha_corta($ch['due_date'])) ?> · <a href="<?= e(url('admin/contrato.php?id=' . $ch['contract_id'])) ?>"><?= e($ch['code']) ?></a></span></span>
+          <?php if ($ch['client_phone']): ?><a class="btn btn--small btn--wa" href="<?= e(client_whatsapp(['phone' => $ch['client_phone']], 'Hola ' . explode(' ', $ch['client_name'])[0] . ', te recordamos que tu cuota "' . $ch['description'] . '" por ' . money($ch['amount']) . ' venció el ' . fecha_corta($ch['due_date']) . '. Puedes pagarla en línea aquí: ' . url('mi-cuenta/'))) ?>" target="_blank" rel="noopener">Recordar</a><?php endif; ?>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+  </section>
+<?php endif; ?>
 
 <?php if ($noPhotos): ?>
   <p class="alert alert--info"><?= $noPhotos ?> inmueble(s) publicados no tienen fotos. Los inmuebles con fotos reciben muchos más contactos. <a href="<?= e(url('admin/inmuebles.php?sin_fotos=1')) ?>">Ver cuáles</a></p>

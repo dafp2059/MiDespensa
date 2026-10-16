@@ -8,6 +8,8 @@ $menu = [
     'inmuebles.php' => 'Inmuebles',
     'proyectos.php' => 'Proyectos',
     'ubicaciones.php' => 'Zonas',
+    'clientes.php' => 'Clientes',
+    'contratos.php' => 'Contratos',
     'mensajes.php' => 'Mensajes',
     'pagos.php' => 'Pagos',
 ];
@@ -19,7 +21,8 @@ $designMenu = [
     'ajustes.php' => 'Ajustes',
     'usuarios.php' => 'Usuarios',
 ];
-$sections = ['inmueble.php' => 'inmuebles.php', 'proyecto.php' => 'proyectos.php', 'pagina.php' => 'paginas.php'];
+$sections = ['inmueble.php' => 'inmuebles.php', 'proyecto.php' => 'proyectos.php', 'pagina.php' => 'paginas.php', 'cliente.php' => 'clientes.php',
+    'contrato.php' => 'contratos.php', 'plantillas.php' => 'contratos.php', 'plantilla.php' => 'contratos.php'];
 $editor = !empty($GLOBALS['needs_editor']);
 $activeItem = $sections[$current] ?? $current;
 ?><!doctype html>

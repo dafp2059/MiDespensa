@@ -85,3 +85,19 @@ details.admin-card[open] > summary { margin-bottom: 16px; }
   .admin-head h1 { font-size: 1.5rem; }
   .admin-card { padding: 16px; }
 }
+.choice { display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: var(--ink); min-height: 160px; justify-content: center; transition: border-color .15s; }
+.choice:hover { border-color: var(--accent); color: var(--ink); }
+.choice .icon { width: 36px; height: 36px; color: var(--accent); }
+.choice strong { font-family: var(--font-display); font-size: 1.25rem; }
+.choice span { color: var(--muted); }
+.inline-form { display: inline-block; }
+.inline-form > summary { list-style: none; }
+.inline-form > summary::-webkit-details-marker { display: none; }
+.inline-form[open] > form { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; padding: 10px; background: var(--sand); border-radius: 10px; }
+.inline-form input, .inline-form select, .owners__actions select { min-height: 38px; padding: 0 10px; border: 1.5px solid #cfd6da; border-radius: 8px; background: #fff; }
+form.inline { display: inline; }
+.table__actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; }
+.text-danger { color: var(--danger); }
+.copy-field { width: 100%; min-height: 46px; padding: 0 12px; border: 1.5px solid #cfd6da; border-radius: 10px; font-family: monospace; background: #fff; }
+.vars { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px 16px; }
+.vars code { background: var(--sand); padding: 2px 6px; border-radius: 6px; font-size: .88rem; }

@@ -8,6 +8,7 @@ if (preg_match('#^/inmueble/([a-z0-9-]+)/?$#', $path, $m)) { $_GET['slug'] = $m[
 elseif (preg_match('#^/proyecto/([a-z0-9-]+)/?$#', $path, $m)) { $_GET['slug'] = $m[1]; $file = 'proyecto.php'; }
 elseif ($path === '/sitemap.xml') $file = 'sitemap.php';
 elseif ($path === '/' ) $file = 'index.php';
+elseif (is_dir($root . $path) && is_file(rtrim($root . $path, '/') . '/index.php')) { $file = trim($path, '/') . '/index.php'; }
 elseif (str_ends_with($path, '/') && is_file($root . $path . 'index.php')) $file = ltrim($path, '/') . 'index.php';
 elseif (is_file($root . $path)) $file = ltrim($path, '/');
 elseif (is_file($root . $path . '.php')) $file = ltrim($path, '/') . '.php';

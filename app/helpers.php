@@ -38,6 +38,7 @@ const PAYMENT_CONCEPTS = [
     'canon' => 'Canon de arrendamiento',
     'administracion' => 'Cuota de administración',
     'separacion' => 'Separación o abono de inmueble',
+    'cuota' => 'Cuota de compraventa',
     'servicios' => 'Servicios públicos',
     'otro' => 'Otro concepto',
 ];

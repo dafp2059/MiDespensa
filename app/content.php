@@ -39,7 +39,7 @@ const PAGE_FORMS = [
 
 /** Direcciones que ya usa la web y no pueden ser páginas. */
 const RESERVED_SLUGS = ['inmuebles', 'inmueble', 'proyectos', 'proyecto', 'pagos', 'pagos-resultado', 'admin', 'assets',
-    'uploads', 'sitemap', 'wompi-webhook', '404', 'index', 'pagina', 'contacto', 'robots'];
+    'uploads', 'sitemap', 'wompi-webhook', '404', 'index', 'pagina', 'contacto', 'robots', 'mi-cuenta'];
 
 function default_settings(): array
 {

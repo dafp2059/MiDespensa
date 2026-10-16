@@ -1,0 +1,26 @@
+/* Contratos y recibos para imprimir o guardar como PDF */
+body { margin: 0; background: #e9ecee; font-family: Georgia, "Times New Roman", serif; color: #111; line-height: 1.55; }
+.toolbar { position: sticky; top: 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 16px; background: #13222c; color: #dfe6ea; font: 14px system-ui, sans-serif; }
+.toolbar button { font: 600 15px system-ui, sans-serif; padding: 10px 18px; border: 0; border-radius: 999px; background: #0f6b52; color: #fff; cursor: pointer; }
+.doc { max-width: 800px; margin: 24px auto; background: #fff; padding: 56px 64px; box-shadow: 0 2px 12px rgba(0, 0, 0, .12); font-size: 15px; }
+.doc__head { display: flex; justify-content: space-between; align-items: center; gap: 24px; border-bottom: 2px solid #111; padding-bottom: 16px; margin-bottom: 28px; font: 13px/1.5 system-ui, sans-serif; text-align: right; }
+.doc__head img { max-height: 56px; width: auto; }
+.doc__head span { display: none; }
+.doc__body h2, .doc h1 { font-size: 18px; text-align: center; text-transform: uppercase; letter-spacing: .02em; margin: 0 0 24px; }
+.doc__body p { text-align: justify; margin: 0 0 12px; }
+.doc__body .ql-align-center { text-align: center; }
+.doc-table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 14px; }
+.doc-table th, .doc-table td { border: 1px solid #999; padding: 6px 10px; text-align: left; vertical-align: top; }
+.doc-table thead th, .doc-table tfoot th { background: #f1f1f1; }
+.doc-table .num { text-align: right; white-space: nowrap; }
+.doc-table--plain th { width: 34%; background: #f6f6f6; }
+.doc-table tr.total td { font-size: 18px; font-weight: bold; }
+.doc-table tr.total small { font-size: 12px; font-weight: normal; }
+.doc__note { margin-top: 28px; font: 12px system-ui, sans-serif; color: #555; }
+@media (max-width: 700px) { .doc { margin: 0; padding: 28px 20px; box-shadow: none; } .doc__head { flex-direction: column; align-items: flex-start; text-align: left; } }
+@media print {
+  body { background: #fff; }
+  .no-print { display: none !important; }
+  .doc { margin: 0; padding: 0; box-shadow: none; max-width: none; }
+  @page { margin: 2cm 2.2cm; }
+}

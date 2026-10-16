@@ -32,6 +32,8 @@ if (is_post()) {
         'admin_fee' => input('admin_fee') === '' ? null : parse_money(input('admin_fee')),
         'location_id' => $nullableInt('location_id'),
         'neighborhood' => input('neighborhood') ?: null,
+        'address' => mb_substr(input('address'), 0, 190) ?: null,
+        'registry_number' => mb_substr(input('registry_number'), 0, 60) ?: null,
         'bedrooms' => $nullableInt('bedrooms'),
         'bathrooms' => $nullableInt('bathrooms'),
         'parking' => $nullableInt('parking'),
@@ -151,6 +153,14 @@ view('admin_header', compact('title'));
       <div class="field"><label for="longitude">Longitud</label><input id="longitude" name="longitude" inputmode="decimal" placeholder="-75.5020" value="<?= $v('longitude') ?>"></div>
       <div class="field"><label for="agent_name">Asesor a cargo</label><input id="agent_name" name="agent_name" value="<?= $v('agent_name') ?>"></div>
       <div class="field"><label for="agent_phone">Teléfono del asesor</label><input id="agent_phone" name="agent_phone" type="tel" value="<?= $v('agent_phone') ?>"></div>
+    </div>
+  </fieldset>
+
+  <fieldset class="admin-card">
+    <legend>Datos para contratos (no se muestran en la web)</legend>
+    <div class="form__row">
+      <div class="field"><label for="address">Dirección exacta</label><input id="address" name="address" placeholder="Ej.: Calle 10 # 43-21, apto 502" value="<?= $v('address') ?>"></div>
+      <div class="field"><label for="registry_number">Matrícula inmobiliaria</label><input id="registry_number" name="registry_number" placeholder="Ej.: 001-1234567" value="<?= $v('registry_number') ?>"></div>
     </div>
   </fieldset>
 

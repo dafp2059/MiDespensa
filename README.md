@@ -19,6 +19,14 @@ Web de la inmobiliaria hecha desde cero, sin WordPress. Usa PHP 8, MySQL, HTML, 
 - **Inmuebles:** crear, editar, ocultar, destacar y eliminar, con fotos (se reducen solas a 1800 px), portada, estado, precio y coordenadas.
 - **Proyectos**, **Zonas** (con foto), **Mensajes** de los formularios (con botón para responder por WhatsApp) y **Pagos** de Wompi (exportables a Excel).
 
+*Clientes y contratos*
+- **Clientes:** arrendatarios y compradores. Con un botón se les envía por WhatsApp o correo el enlace para crear su contraseña de **Mi cuenta**.
+- **Contratos:** arrendamiento o promesa de compraventa. Se elige el inmueble, el cliente y la plantilla, y el contrato sale con todos los datos llenos (incluido el valor en letras), listo para imprimir o guardar como PDF. En arriendo se crean solas las cuotas de cada mes; en venta se arma el plan de pagos.
+- **Cuotas:** ver pagadas, pendientes y vencidas; registrar pagos en efectivo o transferencia; enviar recordatorios por WhatsApp; recibos.
+- **Plantillas de contrato** editables (modelos de referencia: hay que revisarlos con un abogado).
+
+*Portal de clientes* (`/mi-cuenta/`): el cliente ve sus cuotas, paga con un clic por Wompi (la cuota se marca pagada sola cuando Wompi aprueba), descarga recibos y ve su contrato.
+
 *Diseño*
 - **Banner:** varias diapositivas que cambian solas, cada una con foto, video subido (MP4/WEBM) o video de YouTube, título, texto y dos botones. Se eligen los segundos por diapositiva, el alto y si se muestra el buscador.
 - **Inicio:** mostrar, ocultar y reordenar las secciones, y editar todos sus textos, la franja "Por qué elegirnos", los pasos para propietarios, un bloque de texto libre y el título y la descripción para Google.

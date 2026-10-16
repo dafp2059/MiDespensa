@@ -77,6 +77,10 @@ function wompi_apply_transaction(array $tx): ?array
     query('UPDATE payments SET status = ?, wompi_transaction_id = ?, payment_method = ? WHERE id = ?', [
         $status, $tx['id'] ?? null, $tx['payment_method_type'] ?? null, $payment['id'],
     ]);
+    // Pago de una cuota de contrato: queda marcada como pagada.
+    if ($status === 'APPROVED' && !empty($payment['charge_id'])) {
+        mark_charge_paid((int) $payment['charge_id'], 'Wompi', (int) $payment['id']);
+    }
     return query('SELECT * FROM payments WHERE id = ?', [$payment['id']])->fetch();
 }
 
