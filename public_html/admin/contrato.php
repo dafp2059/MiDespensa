@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('contratos.ver');
 $GLOBALS['needs_editor'] = true;
 
 $id = (int) input('id');
@@ -43,9 +43,22 @@ $readData = function (string $type): array {
     return $data;
 };
 
+// Permiso necesario para cada acción del formulario.
+$actionCaps = ['crear' => 'contratos.editar', 'pago_manual' => 'cuotas.pagos', 'reabrir' => 'cuotas.pagos', 'anular' => 'contratos.editar',
+    'editar_cuota' => 'contratos.editar', 'agregar_cuota' => 'contratos.editar', 'guardar_texto' => 'contratos.editar',
+    'regenerar' => 'contratos.editar', 'guardar_datos' => 'contratos.editar', 'eliminar' => 'eliminar'];
+if (!$contract && !can('contratos.editar')) {
+    flash('error', 'Tu usuario no puede crear contratos.');
+    redirect('admin/contratos.php');
+}
+
 if (is_post()) {
     csrf_check();
     $action = input('accion');
+    if (!can($actionCaps[$action] ?? 'eliminar')) {
+        flash('error', 'Tu usuario no tiene permiso para esa acción.');
+        redirect($contract ? 'admin/contrato.php?id=' . $id : 'admin/contratos.php');
+    }
 
     if ($action === 'crear' && !$contract && $type) {
         $data = $readData($type);
@@ -264,6 +277,7 @@ $allTemplates = query('SELECT id, name FROM contract_templates WHERE type = ? OR
             <?php if ($ch['status'] === 'pagado'): ?><br><span class="muted"><?= e($ch['paid_method'] . ' · ' . fecha_corta($ch['paid_at'])) ?></span><?php endif; ?></td>
           <td><div class="table__actions">
             <?php if ($ch['status'] === 'pendiente'): ?>
+              <?php if (can('cuotas.pagos')): ?>
               <details class="inline-form">
                 <summary class="btn btn--small btn--ghost">Registrar pago</summary>
                 <form method="post"><?= csrf_field() ?><input type="hidden" name="charge_id" value="<?= (int) $ch['id'] ?>">
@@ -272,6 +286,8 @@ $allTemplates = query('SELECT id, name FROM contract_templates WHERE type = ? OR
                   <button class="btn btn--small" name="accion" value="pago_manual">Guardar pago</button>
                 </form>
               </details>
+              <?php endif; ?>
+              <?php if (can('contratos.editar')): ?>
               <details class="inline-form">
                 <summary class="btn btn--small btn--ghost">Editar</summary>
                 <form method="post"><?= csrf_field() ?><input type="hidden" name="charge_id" value="<?= (int) $ch['id'] ?>">
@@ -282,12 +298,13 @@ $allTemplates = query('SELECT id, name FROM contract_templates WHERE type = ? OR
                   <button class="btn btn--small btn--danger" name="accion" value="anular" data-confirm="¿Anular esta cuota?">Anular</button>
                 </form>
               </details>
+              <?php endif; ?>
               <?php if ($contract['client_phone']): ?>
                 <a class="btn btn--small btn--wa" href="<?= e(client_whatsapp(['phone' => $contract['client_phone']], 'Hola ' . explode(' ', $contract['client_name'])[0] . ', te recordamos que tu cuota "' . $ch['description'] . '" por ' . money($ch['amount']) . ($state === 'vencida' ? ' venció el ' : ' vence el ') . fecha_corta($ch['due_date']) . '. Puedes pagarla en línea aquí: ' . url('mi-cuenta/'))) ?>" target="_blank" rel="noopener">Recordar</a>
               <?php endif; ?>
             <?php elseif ($ch['status'] === 'pagado'): ?>
               <a class="btn btn--small btn--ghost" href="<?= e(url('admin/recibo.php?id=' . $ch['id'])) ?>" target="_blank">Recibo</a>
-              <?php if (!$ch['payment_id']): ?>
+              <?php if (!$ch['payment_id'] && can('cuotas.pagos')): ?>
                 <form method="post" class="inline"><?= csrf_field() ?><input type="hidden" name="charge_id" value="<?= (int) $ch['id'] ?>"><button class="btn btn--small btn--ghost" name="accion" value="reabrir" data-confirm="¿Deshacer este pago registrado a mano?">Deshacer</button></form>
               <?php endif; ?>
             <?php endif; ?>
@@ -297,6 +314,7 @@ $allTemplates = query('SELECT id, name FROM contract_templates WHERE type = ? OR
       </tbody>
     </table>
   </div>
+  <?php if (can('contratos.editar')): ?>
   <details class="inline-form" style="margin-top:14px">
     <summary class="btn btn--small btn--ghost">+ Agregar cuota</summary>
     <form method="post" class="form__row form__row--4" style="margin-top:12px"><?= csrf_field() ?>
@@ -307,8 +325,10 @@ $allTemplates = query('SELECT id, name FROM contract_templates WHERE type = ? OR
       <div><button class="btn btn--small" name="accion" value="agregar_cuota">Agregar</button></div>
     </form>
   </details>
+  <?php endif; ?>
 </section>
 
+<?php if (can('contratos.editar')): ?>
 <form class="admin-card form" method="post">
   <?= csrf_field() ?>
   <h2>Texto del contrato</h2>
@@ -335,7 +355,10 @@ $allTemplates = query('SELECT id, name FROM contract_templates WHERE type = ? OR
   <div class="admin-actions">
     <button class="btn" name="accion" value="guardar_datos">Guardar datos</button>
     <a class="btn btn--ghost" href="<?= e(url('admin/contratos.php')) ?>">Volver</a>
-    <button class="btn btn--danger" name="accion" value="eliminar" formnovalidate data-confirm="¿Eliminar este contrato y sus cuotas? No se puede deshacer.">Eliminar</button>
+    <?php if (can('eliminar')): ?><button class="btn btn--danger" name="accion" value="eliminar" formnovalidate data-confirm="¿Eliminar este contrato y sus cuotas? No se puede deshacer.">Eliminar</button><?php endif; ?>
   </div>
 </form>
+<?php else: ?>
+  <p><a class="btn btn--ghost" href="<?= e(url('admin/contratos.php')) ?>">Volver a contratos</a></p>
+<?php endif; ?>
 <?php view('admin_footer'); ?>

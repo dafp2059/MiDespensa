@@ -101,3 +101,7 @@ form.inline { display: inline; }
 .copy-field { width: 100%; min-height: 46px; padding: 0 12px; border: 1.5px solid #cfd6da; border-radius: 10px; font-family: monospace; background: #fff; }
 .vars { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px 16px; }
 .vars code { background: var(--sand); padding: 2px 6px; border-radius: 6px; font-size: .88rem; }
+.admin-bar__me { color: #8fa3ae; font-size: .85rem; }
+.code-badge { display: inline-block; min-width: 44px; text-align: center; padding: 4px 8px; border-radius: 8px; background: var(--ink); color: #fff; font-family: var(--font-display); }
+.roles { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.user-row.is-inactive { opacity: .6; }

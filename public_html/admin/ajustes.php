@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('diseno');
 
 $fields = [
     'name' => ['Nombre comercial', 'text', ''],

@@ -1,6 +1,15 @@
 <?php
 require __DIR__ . '/../app/bootstrap.php';
 
+// Búsqueda por código: si existe, se abre directamente el inmueble.
+$code = preg_replace('/\D/', '', input('codigo'));
+if ($code !== '') {
+    $match = query('SELECT slug FROM properties WHERE code = ? AND published = 1', [$code])->fetch();
+    if ($match) {
+        redirect('inmueble/' . $match['slug']);
+    }
+}
+
 $where = ['p.published = 1'];
 $params = [];
 
@@ -36,7 +45,11 @@ if ($q !== '') {
     $where[] = '(p.title LIKE ? OR p.code = ? OR p.neighborhood LIKE ? OR p.description LIKE ?)';
     array_push($params, "%{$q}%", $q, "%{$q}%", "%{$q}%");
 }
-$showClosed = input('cerrados') === '1';
+if ($code !== '') {
+    $where[] = 'p.code = ?';
+    $params[] = $code;
+}
+$showClosed = input('cerrados') === '1' || $code !== '';
 if (!$showClosed) {
     $where[] = "p.status IN ('disponible','reservado')";
 }
@@ -114,7 +127,7 @@ view('header', compact('page'));
         </div>
       <?php else: ?>
         <div class="empty">
-          <p><strong>No encontramos inmuebles con esos filtros.</strong></p>
+          <p><strong><?= $code !== '' ? 'No encontramos el inmueble con código ' . e($code) . '.' : 'No encontramos inmuebles con esos filtros.' ?></strong></p>
           <p>Prueba con otra zona o con un precio mayor. También puedes contarnos qué buscas y te avisamos cuando llegue algo.</p>
           <a class="btn" href="<?= e(whatsapp_link('Hola, estoy buscando un inmueble y no encontré lo que necesito en la web.')) ?>" target="_blank" rel="noopener"><?= icon('chat') ?> Avísame por WhatsApp</a>
         </div>

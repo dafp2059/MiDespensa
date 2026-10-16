@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Se ejecuta al entrar al panel; no hace nada si ya está al día.
  */
 
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 function ensure_schema(): void
 {
@@ -35,6 +35,9 @@ function ensure_schema(): void
     }
     if ($version < 3) {
         migrate_v3();
+    }
+    if ($version < 4) {
+        migrate_v4();
     }
     save_setting('schema_version', (string) SCHEMA_VERSION);
     settings(true);
@@ -204,6 +207,40 @@ function migrate_v3(): void
             ['label' => 'Pagos en línea', 'url' => '/pagos', 'new_tab' => 0],
             ['label' => 'Mi cuenta', 'url' => '/mi-cuenta/', 'new_tab' => 0],
         ], JSON_UNESCAPED_UNICODE));
+    }
+}
+
+/** Versión 4: roles de usuario, asesor del inmueble desde los usuarios y códigos numéricos. */
+function migrate_v4(): void
+{
+    if (!column_exists('users', 'role')) {
+        // Los usuarios que ya existían quedan como administradores.
+        db()->exec("ALTER TABLE users ADD role VARCHAR(20) NOT NULL DEFAULT 'admin' AFTER email,
+            ADD phone VARCHAR(40) NULL AFTER role, ADD active TINYINT(1) NOT NULL DEFAULT 1 AFTER phone");
+    }
+    if (!column_exists('properties', 'agent_user_id')) {
+        db()->exec('ALTER TABLE properties ADD agent_user_id INT UNSIGNED NULL AFTER agent_phone, ADD KEY idx_agent (agent_user_id)');
+        // Si el nombre escrito antes coincide con un usuario, se enlaza.
+        db()->exec('UPDATE properties p JOIN users u ON LOWER(TRIM(u.name)) = LOWER(TRIM(p.agent_name)) SET p.agent_user_id = u.id WHERE p.agent_user_id IS NULL');
+    }
+
+    // Códigos solo con números: "ING-007" pasa a "7"; los repetidos o vacíos reciben el siguiente número libre.
+    $used = [];
+    $pending = [];
+    foreach (query('SELECT id, code FROM properties ORDER BY id')->fetchAll() as $row) {
+        $digits = ltrim(preg_replace('/\D/', '', (string) $row['code']), '0');
+        if ($digits !== '' && !isset($used[$digits])) {
+            $used[$digits] = true;
+            query('UPDATE properties SET code = ? WHERE id = ?', [$digits, $row['id']]);
+        } else {
+            $pending[] = (int) $row['id'];
+        }
+    }
+    foreach ($pending as $id) {
+        query('UPDATE properties SET code = ? WHERE id = ?', [next_property_code(), $id]);
+    }
+    if (!query("SHOW INDEX FROM properties WHERE Key_name = 'uniq_code'")->fetch()) {
+        db()->exec('ALTER TABLE properties ADD UNIQUE KEY uniq_code (code)');
     }
 }
 

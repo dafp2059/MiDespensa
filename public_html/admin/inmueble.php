@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('inmuebles.editar');
 
 $id = (int) input('id');
 $p = $id ? query('SELECT * FROM properties WHERE id = ?', [$id])->fetch() : null;
@@ -15,7 +15,7 @@ $errors = [];
 if (is_post()) {
     csrf_check();
 
-    if (input('accion') === 'eliminar' && $p) {
+    if (input('accion') === 'eliminar' && $p && can('eliminar')) {
         delete_owner_images('property', (int) $p['id']);
         query('DELETE FROM properties WHERE id = ?', [$p['id']]);
         flash('success', 'Inmueble eliminado.');
@@ -24,7 +24,7 @@ if (is_post()) {
 
     $data = [
         'title' => mb_substr(input('title'), 0, 190),
-        'code' => input('code') ?: null,
+        'code' => ltrim(preg_replace('/\D/', '', input('code')), '0') ?: null,
         'operation' => input('operation'),
         'type' => input('type'),
         'status' => input('status'),
@@ -46,8 +46,7 @@ if (is_post()) {
         'latitude' => $nullableDecimal('latitude'),
         'longitude' => $nullableDecimal('longitude'),
         'video_url' => input('video_url') ?: null,
-        'agent_name' => input('agent_name') ?: null,
-        'agent_phone' => input('agent_phone') ?: null,
+        'agent_user_id' => (int) input('agent_user_id') ?: null,
         'featured' => input('featured') === '1' ? 1 : 0,
         'published' => input('published') === '1' ? 1 : 0,
     ];
@@ -55,6 +54,8 @@ if (is_post()) {
     if (!isset(OPERATIONS[$data['operation']])) $errors[] = 'Elige venta o arriendo.';
     if (!isset(TYPES[$data['type']])) $errors[] = 'Elige el tipo de inmueble.';
     if (!isset(STATUSES[$data['status']])) $errors[] = 'Elige el estado.';
+    if (input('code') !== '' && !preg_match('/^\d+$/', input('code'))) $errors[] = 'El código solo puede tener números.';
+    elseif ($data['code'] && query('SELECT id FROM properties WHERE code = ? AND id <> ?', [$data['code'], $id])->fetch()) $errors[] = 'El código ' . $data['code'] . ' ya lo tiene otro inmueble.';
 
     if (!$errors) {
         $placeName = '';
@@ -76,7 +77,7 @@ if (is_post()) {
             $id = (int) db()->lastInsertId();
         }
         if (!$data['code']) {
-            query('UPDATE properties SET code = ? WHERE id = ?', [sprintf('ING-%03d', $id), $id]);
+            query('UPDATE properties SET code = ? WHERE id = ?', [next_property_code(), $id]);
         }
         $added = sync_images('property', $id);
         flash('success', 'Inmueble guardado.' . ($added ? " Se agregaron {$added} foto(s)." : ''));
@@ -110,7 +111,7 @@ view('admin_header', compact('title'));
         <select id="type" name="type"><?php foreach (TYPES as $k => $l): ?><option value="<?= $k ?>" <?= ($p['type'] ?? '') === $k ? 'selected' : '' ?>><?= $l ?></option><?php endforeach; ?></select></div>
       <div class="field"><label for="status">Estado *</label>
         <select id="status" name="status"><?php foreach (STATUSES as $k => $l): ?><option value="<?= $k ?>" <?= ($p['status'] ?? 'disponible') === $k ? 'selected' : '' ?>><?= $l ?></option><?php endforeach; ?></select></div>
-      <div class="field"><label for="code">Código</label><input id="code" name="code" placeholder="Automático" value="<?= $v('code') ?>"></div>
+      <div class="field"><label for="code">Código (solo números)</label><input id="code" name="code" inputmode="numeric" pattern="[0-9]*" placeholder="Se asigna solo" value="<?= $v('code') ?>"></div>
     </div>
     <div class="form__row form__row--4">
       <div class="field"><label for="price">Precio (COP)<?= ($p['operation'] ?? '') === 'arriendo' ? ' mensual' : '' ?></label><input id="price" name="price" inputmode="numeric" data-money value="<?= isset($p['price']) && $p['price'] ? e(money($p['price'], false)) : '' ?>"></div>
@@ -151,8 +152,11 @@ view('admin_header', compact('title'));
     <div class="form__row form__row--4">
       <div class="field"><label for="latitude">Latitud</label><input id="latitude" name="latitude" inputmode="decimal" placeholder="6.0605" value="<?= $v('latitude') ?>"></div>
       <div class="field"><label for="longitude">Longitud</label><input id="longitude" name="longitude" inputmode="decimal" placeholder="-75.5020" value="<?= $v('longitude') ?>"></div>
-      <div class="field"><label for="agent_name">Asesor a cargo</label><input id="agent_name" name="agent_name" value="<?= $v('agent_name') ?>"></div>
-      <div class="field"><label for="agent_phone">Teléfono del asesor</label><input id="agent_phone" name="agent_phone" type="tel" value="<?= $v('agent_phone') ?>"></div>
+      <div class="field"><label for="agent_user_id">Asesor a cargo</label>
+        <select id="agent_user_id" name="agent_user_id"><option value="">Sin asesor (se usa el teléfono de la empresa)</option>
+          <?php foreach (staff_users() as $u): ?><option value="<?= (int) $u['id'] ?>" <?= (int) ($p['agent_user_id'] ?? 0) === (int) $u['id'] ? 'selected' : '' ?>><?= e($u['name'] . ' · ' . (ROLES[$u['role']] ?? '')) ?></option><?php endforeach; ?>
+        </select>
+        <span class="muted">La lista sale de <?= can('usuarios') ? '<a href="' . e(url('admin/usuarios.php')) . '">Usuarios</a>' : 'los usuarios del panel' ?>. En la web se muestra su nombre y su celular.</span></div>
     </div>
   </fieldset>
 
@@ -168,7 +172,7 @@ view('admin_header', compact('title'));
     <button class="btn" type="submit">Guardar</button>
     <a class="btn btn--ghost" href="<?= e(url('admin/inmuebles.php')) ?>">Volver</a>
     <?php if ($id): ?>
-      <button class="btn btn--danger" type="submit" name="accion" value="eliminar" formnovalidate data-confirm="¿Eliminar este inmueble y todas sus fotos? No se puede deshacer.">Eliminar</button>
+      <?php if (can('eliminar')): ?><button class="btn btn--danger" type="submit" name="accion" value="eliminar" formnovalidate data-confirm="¿Eliminar este inmueble y todas sus fotos? No se puede deshacer.">Eliminar</button><?php endif; ?>
     <?php endif; ?>
   </div>
 </form>

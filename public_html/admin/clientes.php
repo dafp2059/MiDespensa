@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('clientes.ver');
 
 $q = input('q');
 $params = [];
@@ -20,7 +20,7 @@ view('admin_header', compact('title'));
 ?>
 <div class="admin-head">
   <h1>Clientes</h1>
-  <a class="btn" href="<?= e(url('admin/cliente.php')) ?>">+ Nuevo cliente</a>
+  <?php if (can('clientes.editar')): ?><a class="btn" href="<?= e(url('admin/cliente.php')) ?>">+ Nuevo cliente</a><?php endif; ?>
 </div>
 <p class="admin-help">Arrendatarios y compradores. Cada cliente puede entrar a <strong>Mi cuenta</strong> para ver su contrato, pagar sus cuotas y descargar recibos.</p>
 

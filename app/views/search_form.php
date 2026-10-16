@@ -44,10 +44,17 @@ $op = input('operacion');
         </select>
       </div>
       <div class="field">
-        <label for="s-q">Palabra clave o código</label>
-        <input id="s-q" name="q" placeholder="Ej.: piscina, ING-001" value="<?= e(input('q')) ?>">
+        <label for="s-q">Palabra clave</label>
+        <input id="s-q" name="q" placeholder="Ej.: piscina, balcón" value="<?= e(input('q')) ?>">
       </div>
     <?php endif; ?>
     <button class="btn search__submit" type="submit"><?= icon('search') ?> Buscar</button>
+  </div>
+</form>
+<form class="code-search<?= $compact ? ' code-search--hero' : '' ?>" action="<?= e(url('inmuebles')) ?>" method="get">
+  <label for="s-codigo<?= $compact ? '-h' : '' ?>">¿Viste un aviso? Busca por código</label>
+  <div class="code-search__row">
+    <input id="s-codigo<?= $compact ? '-h' : '' ?>" name="codigo" inputmode="numeric" pattern="[0-9]*" placeholder="Ej.: 105" value="<?= e(input('codigo')) ?>">
+    <button class="btn btn--small" type="submit">Ir</button>
   </div>
 </form>

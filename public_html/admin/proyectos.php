@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('proyectos');
 
 $projects = query("SELECT pr.*, (SELECT i.filename FROM images i WHERE i.owner_type = 'project' AND i.owner_id = pr.id
     ORDER BY i.sort_order, i.id LIMIT 1) AS cover FROM projects pr ORDER BY pr.sort_order, pr.created_at DESC")->fetchAll();

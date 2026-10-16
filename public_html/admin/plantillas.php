@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('diseno');
 
 $templates = query('SELECT t.*, (SELECT COUNT(*) FROM contracts c WHERE c.template_id = t.id) AS used FROM contract_templates t ORDER BY t.type, t.name')->fetchAll();
 $title = 'Plantillas de contrato';

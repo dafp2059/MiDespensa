@@ -2,25 +2,29 @@
 /** @var string $title */
 $user = current_user();
 $current = basename($_SERVER['SCRIPT_NAME'] ?? '');
-$unread = $user ? (int) query('SELECT COUNT(*) FROM messages WHERE read_at IS NULL')->fetchColumn() : 0;
+$unread = $user && can('mensajes') ? (int) query('SELECT COUNT(*) FROM messages WHERE read_at IS NULL')->fetchColumn() : 0;
+// Opción del menú => [texto, permiso necesario]
 $menu = [
-    'index.php' => 'Resumen',
-    'inmuebles.php' => 'Inmuebles',
-    'proyectos.php' => 'Proyectos',
-    'ubicaciones.php' => 'Zonas',
-    'clientes.php' => 'Clientes',
-    'contratos.php' => 'Contratos',
-    'mensajes.php' => 'Mensajes',
-    'pagos.php' => 'Pagos',
+    'index.php' => ['Resumen', null],
+    'inmuebles.php' => ['Inmuebles', 'inmuebles.ver'],
+    'proyectos.php' => ['Proyectos', 'proyectos'],
+    'ubicaciones.php' => ['Zonas', 'zonas'],
+    'clientes.php' => ['Clientes', 'clientes.ver'],
+    'contratos.php' => ['Contratos', 'contratos.ver'],
+    'mensajes.php' => ['Mensajes', 'mensajes'],
+    'pagos.php' => ['Pagos', 'pagos'],
 ];
 $designMenu = [
-    'banner.php' => 'Banner',
-    'inicio.php' => 'Inicio',
-    'menus.php' => 'Menús',
-    'paginas.php' => 'Páginas',
-    'ajustes.php' => 'Ajustes',
-    'usuarios.php' => 'Usuarios',
+    'banner.php' => ['Banner', 'diseno'],
+    'inicio.php' => ['Inicio', 'diseno'],
+    'menus.php' => ['Menús', 'diseno'],
+    'paginas.php' => ['Páginas', 'diseno'],
+    'ajustes.php' => ['Ajustes', 'diseno'],
+    'usuarios.php' => ['Usuarios', 'usuarios'],
 ];
+$visible = fn(array $items) => array_filter($items, fn($i) => $i[1] === null || can($i[1]));
+$menu = $visible($menu);
+$designMenu = $visible($designMenu);
 $sections = ['inmueble.php' => 'inmuebles.php', 'proyecto.php' => 'proyectos.php', 'pagina.php' => 'paginas.php', 'cliente.php' => 'clientes.php',
     'contrato.php' => 'contratos.php', 'plantillas.php' => 'contratos.php', 'plantilla.php' => 'contratos.php'];
 $editor = !empty($GLOBALS['needs_editor']);
@@ -46,15 +50,16 @@ $activeItem = $sections[$current] ?? $current;
     <?= logo_html(true, 32) ?>
   </a>
   <nav class="admin-nav" aria-label="Panel">
-    <?php foreach ($menu as $file => $label): ?>
+    <?php foreach ($menu as $file => [$label]): ?>
       <a href="<?= e(url('admin/' . $file)) ?>"<?= $activeItem === $file ? ' aria-current="page"' : '' ?>><?= e($label) ?><?php if ($file === 'mensajes.php' && $unread): ?> <span class="pill"><?= $unread ?></span><?php endif; ?></a>
     <?php endforeach; ?>
-    <span class="admin-nav__label">Diseño</span>
-    <?php foreach ($designMenu as $file => $label): ?>
+    <?php if ($designMenu): ?><span class="admin-nav__label">Diseño</span><?php endif; ?>
+    <?php foreach ($designMenu as $file => [$label]): ?>
       <a href="<?= e(url('admin/' . $file)) ?>"<?= $activeItem === $file ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
     <?php endforeach; ?>
   </nav>
   <div class="admin-bar__user">
+    <span class="admin-bar__me"><?= e(explode(' ', $user['name'])[0]) ?> · <?= e(ROLES[$user['role']] ?? $user['role']) ?></span>
     <a href="<?= e(url('')) ?>" target="_blank">Ver web</a>
     <form action="<?= e(url('admin/logout.php')) ?>" method="post"><?= csrf_field() ?><button class="link-button" type="submit">Salir</button></form>
   </div>

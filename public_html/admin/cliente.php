@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('clientes.ver');
 
 $id = (int) input('id');
 $client = $id ? query('SELECT * FROM clients WHERE id = ?', [$id])->fetch() : null;
@@ -9,16 +9,27 @@ if ($id && !$client) {
 }
 $errors = [];
 
+/** Correo de bienvenida con el enlace para crear la contraseña. */
+$sendWelcome = function (array $client, string $link): bool {
+    return send_mail($client['email'], 'Bienvenido a ' . site('name') . ': tu acceso a Mi cuenta',
+        "Hola {$client['name']},\n\nEn " . site('name') . " creamos tu acceso a Mi cuenta, donde puedes ver tu contrato, pagar tus cuotas en línea y descargar tus recibos.\n\n"
+        . "1. Abre este enlace y crea tu contraseña (vence en 7 días):\n{$link}\n\n"
+        . "2. Después entra cuando quieras en " . url('mi-cuenta/') . " con tu correo ({$client['email']}) y tu contraseña.\n\n"
+        . "¿Dudas? Escríbenos al " . phone_display(site('phone')) . ".\n\n" . site('name'));
+};
+
 if (is_post()) {
     csrf_check();
     $action = input('accion');
+    if (!can('clientes.editar')) {
+        flash('error', 'Tu usuario solo puede consultar clientes.');
+        redirect($id ? 'admin/cliente.php?id=' . $id : 'admin/clientes.php');
+    }
 
     if (($action === 'enlace' || $action === 'enlace_correo') && $client) {
         $_SESSION['access_link'] = client_access_link($id);
         if ($action === 'enlace_correo') {
-            $sent = send_mail($client['email'], 'Tu acceso a ' . site('name'),
-                "Hola {$client['name']},\n\nCrea tu contraseña para entrar a Mi cuenta, donde puedes ver tu contrato, pagar tus cuotas y descargar tus recibos:\n\n"
-                . $_SESSION['access_link'] . "\n\nEl enlace vence en 7 días.\n\n" . site('name') . "\n" . phone_display(site('phone')));
+            $sent = $sendWelcome($client, $_SESSION['access_link']);
             flash($sent ? 'success' : 'error', $sent ? 'Enlace enviado a ' . $client['email'] . '.' : 'No se pudo enviar el correo. Compártelo por WhatsApp.');
         }
         redirect('admin/cliente.php?id=' . $id);
@@ -50,9 +61,20 @@ if (is_post()) {
         } else {
             query('INSERT INTO clients (' . implode(', ', $columns) . ') VALUES (' . implode(', ', array_fill(0, count($columns), '?')) . ')', array_values($data));
             $id = (int) db()->lastInsertId();
+            // Cliente nuevo: se crea su enlace de acceso y se le envía la bienvenida.
+            $_SESSION['access_link'] = client_access_link($id);
+            if (input('bienvenida') === '1') {
+                $sent = $sendWelcome($data, $_SESSION['access_link']);
+                flash($sent ? 'success' : 'error', $sent
+                    ? 'Le enviamos al cliente un correo de bienvenida con su acceso. También puedes enviárselo por WhatsApp.'
+                    : 'No se pudo enviar el correo de bienvenida. Envíale el enlace por WhatsApp.');
+            }
         }
         flash('success', 'Cliente guardado.');
         $back = input('volver');
+        if ($back === 'contrato') {
+            unset($_SESSION['access_link']);
+        }
         redirect($back === 'contrato' ? 'admin/contrato.php?cliente=' . $id . '&tipo=' . urlencode(input('tipo')) : 'admin/cliente.php?id=' . $id);
     }
     $client = array_merge($client ?? [], $data);
@@ -68,11 +90,11 @@ view('admin_header', compact('title'));
 ?>
 <div class="admin-head">
   <h1><?= e($title) ?></h1>
-  <?php if ($id): ?><a class="btn" href="<?= e(url('admin/contrato.php?cliente=' . $id)) ?>">+ Nuevo contrato</a><?php endif; ?>
+  <?php if ($id && can('contratos.editar')): ?><a class="btn" href="<?= e(url('admin/contrato.php?cliente=' . $id)) ?>">+ Nuevo contrato</a><?php endif; ?>
 </div>
 <?php if ($errors): ?><p class="alert alert--error" role="alert"><?= e(implode(' ', $errors)) ?></p><?php endif; ?>
 
-<?php if ($id): ?>
+<?php if ($id && can('clientes.editar')): ?>
   <section class="admin-card">
     <h2>Acceso a "Mi cuenta"</h2>
     <?php if ($link): ?>
@@ -112,8 +134,11 @@ view('admin_header', compact('title'));
     </div>
     <div class="field"><label for="notes">Notas internas (el cliente no las ve)</label><textarea id="notes" name="notes" rows="2"><?= $v('notes') ?></textarea></div>
   </fieldset>
+  <?php if (!$id): ?>
+    <label class="check"><input type="checkbox" name="bienvenida" value="1" checked> <span>Enviarle un correo de bienvenida con el enlace para crear su contraseña</span></label>
+  <?php endif; ?>
   <div class="admin-actions">
-    <button class="btn" type="submit">Guardar cliente</button>
+    <?php if (can('clientes.editar')): ?><button class="btn" type="submit">Guardar cliente</button><?php endif; ?>
     <a class="btn btn--ghost" href="<?= e(url('admin/clientes.php')) ?>">Volver</a>
   </div>
 </form>

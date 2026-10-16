@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('pagos');
 
 $where = ['1 = 1'];
 $params = [];

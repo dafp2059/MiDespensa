@@ -33,7 +33,13 @@ Web de la inmobiliaria hecha desde cero, sin WordPress. Usa PHP 8, MySQL, HTML, 
 - **Menús:** menú principal, barra superior y las dos columnas del pie de página (texto, enlace, orden y si abre en pestaña nueva), además de los textos del pie.
 - **Páginas:** Nosotros, Contacto, Vende o arrienda, Política de datos y todas las páginas nuevas que quieras, con editor de texto, foto de encabezado y formulario de contacto opcional.
 - **Ajustes:** logo, versión para fondo oscuro, ícono de la pestaña, colores, tipografía, botones de WhatsApp y los datos de la empresa (teléfono, dirección, horario, redes, NIT, razón social).
-- **Usuarios** del equipo.
+- **Usuarios** del equipo, con roles:
+  - **Administrador:** todo, incluido el diseño de la web, los usuarios, las plantillas y eliminar información.
+  - **Administrativo:** publica y edita inmuebles, proyectos y zonas; maneja clientes y contratos.
+  - **Contable:** pagos, cuotas y recibos; consulta clientes y contratos.
+  - **Asesor:** responde mensajes y atiende clientes; ve los inmuebles pero no los publica ni los edita.
+
+Los **códigos de inmueble son solo números** (se asignan solos desde el 100 o se escriben a mano). En la web se busca por código, y la dirección corta `tudominio.com/105` abre directamente el inmueble 105, ideal para los avisos de "Se vende / Se arrienda". El asesor de cada inmueble se elige de la lista de usuarios y en la ficha se muestra su nombre y su celular.
 
 Al subir una versión nueva del código, la base de datos se actualiza sola la primera vez que alguien abre la web.
 

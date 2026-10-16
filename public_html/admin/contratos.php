@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('contratos.ver');
 
 $where = ['1 = 1'];
 $params = [];
@@ -22,8 +22,8 @@ view('admin_header', compact('title'));
 <div class="admin-head">
   <h1>Contratos</h1>
   <div class="owners__actions">
-    <a class="btn btn--ghost" href="<?= e(url('admin/plantillas.php')) ?>">Plantillas</a>
-    <a class="btn" href="<?= e(url('admin/contrato.php')) ?>">+ Nuevo contrato</a>
+    <?php if (can('diseno')): ?><a class="btn btn--ghost" href="<?= e(url('admin/plantillas.php')) ?>">Plantillas</a><?php endif; ?>
+    <?php if (can('contratos.editar')): ?><a class="btn" href="<?= e(url('admin/contrato.php')) ?>">+ Nuevo contrato</a><?php endif; ?>
   </div>
 </div>
 <form class="admin-filters" method="get">

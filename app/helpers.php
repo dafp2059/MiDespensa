@@ -280,13 +280,35 @@ function take_flashes(): array
     return $flashes;
 }
 
+const ROLES = [
+    'admin' => 'Administrador',
+    'administrativo' => 'Administrativo',
+    'contable' => 'Contable',
+    'asesor' => 'Asesor',
+];
+const ROLE_DESCRIPTIONS = [
+    'admin' => 'Todo: diseño de la web, usuarios, plantillas y eliminar información.',
+    'administrativo' => 'Publica y edita inmuebles, proyectos y zonas; maneja clientes y contratos.',
+    'contable' => 'Pagos, cuotas y recibos; consulta clientes y contratos.',
+    'asesor' => 'Responde mensajes y atiende clientes; ve los inmuebles pero no los publica ni los edita.',
+];
+
+/** Qué puede hacer cada rol. El administrador lo puede todo. */
+const ROLE_CAPS = [
+    'administrativo' => ['inmuebles.ver', 'inmuebles.editar', 'proyectos', 'zonas', 'mensajes', 'mensajes.eliminar',
+        'clientes.ver', 'clientes.editar', 'contratos.ver', 'contratos.editar', 'cuotas.pagos'],
+    'contable' => ['inmuebles.ver', 'clientes.ver', 'contratos.ver', 'cuotas.pagos', 'pagos'],
+    'asesor' => ['inmuebles.ver', 'mensajes', 'clientes.ver', 'clientes.editar', 'contratos.ver'],
+];
+
 function current_user(): ?array
 {
     static $user = false;
     if ($user === false) {
         $user = null;
         if (!empty($_SESSION['user_id'])) {
-            $user = query('SELECT id, name, email FROM users WHERE id = ?', [$_SESSION['user_id']])->fetch() ?: null;
+            $user = query('SELECT * FROM users WHERE id = ? AND active = 1', [$_SESSION['user_id']])->fetch() ?: null;
+            unset($user['password_hash']);
         }
     }
     return $user;
@@ -301,15 +323,52 @@ function require_login(): array
     return $user;
 }
 
+/** ¿El usuario que está en el panel tiene este permiso? */
+function can(string $cap): bool
+{
+    $user = current_user();
+    if (!$user) {
+        return false;
+    }
+    return $user['role'] === 'admin' || in_array($cap, ROLE_CAPS[$user['role']] ?? [], true);
+}
+
+/** Corta la página si el usuario no tiene el permiso. */
+function require_can(string $cap): array
+{
+    $user = require_login();
+    if (!can($cap)) {
+        http_response_code(403);
+        flash('error', 'Tu usuario no tiene permiso para esa sección. Pídeselo al administrador.');
+        redirect('admin/');
+    }
+    return $user;
+}
+
+/** Usuarios activos que pueden aparecer como asesor de un inmueble. */
+function staff_users(): array
+{
+    return query("SELECT id, name, phone, role FROM users WHERE active = 1 ORDER BY role = 'asesor' DESC, name")->fetchAll();
+}
+
 // ---------- Inmuebles ----------
 
 /** Añade a cada inmueble su foto de portada (cover) y el nombre de la ubicación. */
 function property_select(): string
 {
     return "SELECT p.*, l.name AS location_name, l.slug AS location_slug,
+        COALESCE(ag.name, p.agent_name) AS agent_name, COALESCE(ag.phone, p.agent_phone) AS agent_phone,
         (SELECT i.filename FROM images i WHERE i.owner_type = 'property' AND i.owner_id = p.id
          ORDER BY i.sort_order, i.id LIMIT 1) AS cover
-        FROM properties p LEFT JOIN locations l ON l.id = p.location_id";
+        FROM properties p LEFT JOIN locations l ON l.id = p.location_id
+        LEFT JOIN users ag ON ag.id = p.agent_user_id AND ag.active = 1";
+}
+
+/** Siguiente código libre para un inmueble: 100, 101, 102… */
+function next_property_code(): string
+{
+    $max = (int) query("SELECT COALESCE(MAX(CAST(code AS UNSIGNED)), 0) FROM properties WHERE code REGEXP '^[0-9]+$'")->fetchColumn();
+    return (string) max(100, $max + 1);
 }
 
 function property_url(array $p): string

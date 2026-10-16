@@ -8,7 +8,7 @@
     <?php endif; ?>
   </a>
   <div class="card__body">
-    <p class="card__type"><?= e(TYPES[$p['type']]) ?><?= property_place($p) ? ' · ' . e(property_place($p)) : '' ?></p>
+    <p class="card__type"><?= e(TYPES[$p['type']]) ?><?= property_place($p) ? ' · ' . e(property_place($p)) : '' ?><?php if ($p['code']): ?><span class="card__code">Cód. <?= e($p['code']) ?></span><?php endif; ?></p>
     <h3 class="card__title"><a href="<?= e(property_url($p)) ?>"><?= e($p['title']) ?></a></h3>
     <p class="card__price">
       <?= $p['price'] ? e(money($p['price'])) : 'Precio a convenir' ?>

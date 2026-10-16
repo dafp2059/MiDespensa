@@ -26,7 +26,7 @@ view('admin_header', compact('title'));
 ?>
 <div class="admin-head">
   <h1>Hola, <?= e(explode(' ', $user['name'])[0]) ?></h1>
-  <a class="btn" href="<?= e(url('admin/inmueble.php')) ?>">+ Nuevo inmueble</a>
+  <?php if (can('inmuebles.editar')): ?><a class="btn" href="<?= e(url('admin/inmueble.php')) ?>">+ Nuevo inmueble</a><?php endif; ?>
 </div>
 
 <div class="stats">
@@ -36,13 +36,16 @@ view('admin_header', compact('title'));
   <div class="stat"><span>Ocultos</span><strong><?= (int) $counts['ocultos'] ?></strong></div>
 </div>
 
+<?php if (can('cuotas.pagos')): ?>
 <div class="stats">
   <div class="stat"><span>Recaudado este mes</span><strong><?= e(money($monthPaid, false)) ?></strong></div>
   <div class="stat"><span>Por cobrar (hasta fin de mes)</span><strong><?= e(money($monthDue, false)) ?></strong></div>
   <div class="stat"><span>Cuotas vencidas</span><strong<?= $overdue ? ' class="text-danger"' : '' ?>><?= count($overdue) ?><?= count($overdue) === 10 ? '+' : '' ?></strong></div>
 </div>
 
-<?php if ($overdue): ?>
+<?php endif; ?>
+
+<?php if ($overdue && can('contratos.ver')): ?>
   <section class="admin-card">
     <h2>Cuotas vencidas</h2>
     <ul class="admin-list">
@@ -57,11 +60,12 @@ view('admin_header', compact('title'));
   </section>
 <?php endif; ?>
 
-<?php if ($noPhotos): ?>
+<?php if ($noPhotos && can('inmuebles.editar')): ?>
   <p class="alert alert--info"><?= $noPhotos ?> inmueble(s) publicados no tienen fotos. Los inmuebles con fotos reciben muchos más contactos. <a href="<?= e(url('admin/inmuebles.php?sin_fotos=1')) ?>">Ver cuáles</a></p>
 <?php endif; ?>
 
 <div class="admin-columns">
+  <?php if (can('mensajes')): ?>
   <section class="admin-card">
     <h2>Últimos mensajes</h2>
     <?php if ($messages): ?>
@@ -77,6 +81,8 @@ view('admin_header', compact('title'));
       <a href="<?= e(url('admin/mensajes.php')) ?>">Ver todos los mensajes</a>
     <?php else: ?><p class="muted">Aún no hay mensajes.</p><?php endif; ?>
   </section>
+  <?php endif; ?>
+  <?php if (can('pagos')): ?>
   <section class="admin-card">
     <h2>Últimos pagos</h2>
     <?php if ($payments): ?>
@@ -90,5 +96,6 @@ view('admin_header', compact('title'));
       <a href="<?= e(url('admin/pagos.php')) ?>">Ver todos los pagos</a>
     <?php else: ?><p class="muted">Aún no hay pagos.</p><?php endif; ?>
   </section>
+  <?php endif; ?>
 </div>
 <?php view('admin_footer'); ?>

@@ -18,7 +18,7 @@ if (is_post()) {
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Revisa el correo.';
     if (strlen($password) < 10) $errors[] = 'La contraseña debe tener al menos 10 caracteres.';
     if (!$errors) {
-        query('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)', [$name, $email, password_hash($password, PASSWORD_DEFAULT)]);
+        query("INSERT INTO users (name, email, role, password_hash) VALUES (?, ?, 'admin', ?)", [$name, $email, password_hash($password, PASSWORD_DEFAULT)]);
         session_regenerate_id(true);
         $_SESSION['user_id'] = (int) db()->lastInsertId();
         flash('success', 'Usuario creado. ¡Bienvenido al panel!');

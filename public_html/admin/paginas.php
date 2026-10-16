@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('diseno');
 
 $pages = query('SELECT * FROM pages ORDER BY locked DESC, title')->fetchAll();
 $title = 'Páginas';

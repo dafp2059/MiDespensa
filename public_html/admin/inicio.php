@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('diseno');
 $GLOBALS['needs_editor'] = true;
 
 // Campos de texto simples de cada sección: clave => [etiqueta, tipo]

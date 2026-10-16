@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('diseno');
 
 /** Borra del disco la foto o el video de una diapositiva. */
 $deleteMedia = function (array $slide): void {

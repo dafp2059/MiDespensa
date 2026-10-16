@@ -1,13 +1,13 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('mensajes');
 
 if (is_post()) {
     csrf_check();
     $id = (int) input('id');
     if (input('accion') === 'leido') {
         query('UPDATE messages SET read_at = IF(read_at IS NULL, NOW(), NULL) WHERE id = ?', [$id]);
-    } elseif (input('accion') === 'eliminar') {
+    } elseif (input('accion') === 'eliminar' && can('mensajes.eliminar')) {
         query('DELETE FROM messages WHERE id = ?', [$id]);
         flash('success', 'Mensaje eliminado.');
     }
@@ -36,7 +36,7 @@ view('admin_header', compact('title'));
         <a class="btn btn--small btn--ghost" href="mailto:<?= e($m['email']) ?>">Correo</a>
         <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $m['id'] ?>">
           <button class="btn btn--small btn--ghost" name="accion" value="leido"><?= $m['read_at'] ? 'Marcar como no leído' : 'Marcar como leído' ?></button>
-          <button class="btn btn--small btn--danger" name="accion" value="eliminar" data-confirm="¿Eliminar este mensaje?">Eliminar</button>
+          <?php if (can('mensajes.eliminar')): ?><button class="btn btn--small btn--danger" name="accion" value="eliminar" data-confirm="¿Eliminar este mensaje?">Eliminar</button><?php endif; ?>
         </form>
       </div>
     </header>

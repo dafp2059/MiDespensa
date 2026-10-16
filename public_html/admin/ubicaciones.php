@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('zonas');
 
 if (is_post()) {
     csrf_check();
@@ -18,7 +18,7 @@ if (is_post()) {
             query('UPDATE locations SET image = ? WHERE id = ?', [$uploaded[0], $id]);
         }
         flash('success', 'Zona guardada.');
-    } elseif ($action === 'eliminar' && $id) {
+    } elseif ($action === 'eliminar' && $id && can('eliminar')) {
         $old = query('SELECT image FROM locations WHERE id = ?', [$id])->fetchColumn();
         if ($old) delete_image_file($old);
         query('DELETE FROM locations WHERE id = ?', [$id]);
@@ -45,7 +45,7 @@ view('admin_header', compact('title'));
     <label class="check"><input type="checkbox" name="featured" value="1" <?= $z['featured'] ? 'checked' : '' ?>> <span>En el inicio</span></label>
     <span class="muted"><?= (int) $z['total'] ?> inmuebles</span>
     <button class="btn btn--small" type="submit" name="accion" value="guardar">Guardar</button>
-    <button class="btn btn--small btn--danger" type="submit" name="accion" value="eliminar" formnovalidate data-confirm="¿Eliminar la zona <?= e($z['name']) ?>?">Eliminar</button>
+    <?php if (can('eliminar')): ?><button class="btn btn--small btn--danger" type="submit" name="accion" value="eliminar" formnovalidate data-confirm="¿Eliminar la zona <?= e($z['name']) ?>?">Eliminar</button><?php endif; ?>
   </form>
 <?php endforeach; ?>
 

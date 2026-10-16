@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('proyectos');
 
 $id = (int) input('id');
 $pr = $id ? query('SELECT * FROM projects WHERE id = ?', [$id])->fetch() : null;
@@ -11,7 +11,7 @@ $errors = [];
 
 if (is_post()) {
     csrf_check();
-    if (input('accion') === 'eliminar' && $pr) {
+    if (input('accion') === 'eliminar' && $pr && can('eliminar')) {
         delete_owner_images('project', $id);
         query('DELETE FROM projects WHERE id = ?', [$id]);
         flash('success', 'Proyecto eliminado.');
@@ -69,7 +69,7 @@ view('admin_header', compact('title'));
   <div class="admin-actions">
     <button class="btn" type="submit">Guardar</button>
     <a class="btn btn--ghost" href="<?= e(url('admin/proyectos.php')) ?>">Volver</a>
-    <?php if ($id): ?><button class="btn btn--danger" type="submit" name="accion" value="eliminar" formnovalidate data-confirm="¿Eliminar este proyecto y sus fotos?">Eliminar</button><?php endif; ?>
+    <?php if ($id && can('eliminar')): ?><button class="btn btn--danger" type="submit" name="accion" value="eliminar" formnovalidate data-confirm="¿Eliminar este proyecto y sus fotos?">Eliminar</button><?php endif; ?>
   </div>
 </form>
 <?php view('admin_footer'); ?>

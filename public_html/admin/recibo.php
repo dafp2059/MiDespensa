@@ -1,6 +1,6 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
-require_login();
+require_can('contratos.ver');
 
 $charge = receipt_data((int) input('id'));
 if (!$charge) {
