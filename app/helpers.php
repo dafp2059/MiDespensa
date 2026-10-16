@@ -288,17 +288,17 @@ const ROLES = [
 ];
 const ROLE_DESCRIPTIONS = [
     'admin' => 'Todo: diseño de la web, usuarios, plantillas y eliminar información.',
-    'administrativo' => 'Publica y edita inmuebles, proyectos y zonas; maneja clientes y contratos.',
-    'contable' => 'Pagos, cuotas y recibos; consulta clientes y contratos.',
-    'asesor' => 'Responde mensajes y atiende clientes; ve los inmuebles pero no los publica ni los edita.',
+    'administrativo' => 'Publica y edita inmuebles, proyectos y zonas; maneja clientes, contratos, actas, reajustes y la agenda.',
+    'contable' => 'Pagos, cuotas, recibos y reajustes por IPC; consulta clientes y contratos.',
+    'asesor' => 'Responde mensajes, atiende clientes, agenda visitas y hace actas de entrega; ve los inmuebles pero no los publica ni los edita.',
 ];
 
 /** Qué puede hacer cada rol. El administrador lo puede todo. */
 const ROLE_CAPS = [
     'administrativo' => ['inmuebles.ver', 'inmuebles.editar', 'proyectos', 'zonas', 'mensajes', 'mensajes.eliminar',
-        'clientes.ver', 'clientes.editar', 'contratos.ver', 'contratos.editar', 'cuotas.pagos'],
-    'contable' => ['inmuebles.ver', 'clientes.ver', 'contratos.ver', 'cuotas.pagos', 'pagos'],
-    'asesor' => ['inmuebles.ver', 'mensajes', 'clientes.ver', 'clientes.editar', 'contratos.ver'],
+        'clientes.ver', 'clientes.editar', 'contratos.ver', 'contratos.editar', 'cuotas.pagos', 'reajustes', 'actas', 'agenda'],
+    'contable' => ['inmuebles.ver', 'clientes.ver', 'contratos.ver', 'cuotas.pagos', 'pagos', 'reajustes'],
+    'asesor' => ['inmuebles.ver', 'mensajes', 'clientes.ver', 'clientes.editar', 'contratos.ver', 'actas', 'agenda'],
 ];
 
 function current_user(): ?array

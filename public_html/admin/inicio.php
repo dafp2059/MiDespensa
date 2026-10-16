@@ -8,6 +8,7 @@ $texts = [
     'destacados' => ['home.destacados.eyebrow' => ['Texto pequeño superior', 'text'], 'home.destacados.title' => ['Título', 'text'],
         'home.destacados.link' => ['Texto del enlace "ver todos"', 'text'], 'home.destacados.count' => ['Cantidad de inmuebles a mostrar', 'number']],
     'zonas' => ['home.zonas.eyebrow' => ['Texto pequeño superior', 'text'], 'home.zonas.title' => ['Título', 'text']],
+    'mapa' => ['home.mapa.eyebrow' => ['Texto pequeño superior', 'text'], 'home.mapa.title' => ['Título', 'text']],
     'propietarios' => ['home.propietarios.eyebrow' => ['Texto pequeño superior', 'text'], 'home.propietarios.title' => ['Título', 'text'],
         'home.propietarios.text' => ['Texto', 'textarea'], 'home.propietarios.button' => ['Botón: texto', 'text'],
         'home.propietarios.button_url' => ['Botón: enlace', 'link'], 'home.propietarios.whatsapp' => ['Botón de WhatsApp: texto (vacío para ocultarlo)', 'text']],

@@ -11,6 +11,7 @@ $menu = [
     'ubicaciones.php' => ['Zonas', 'zonas'],
     'clientes.php' => ['Clientes', 'clientes.ver'],
     'contratos.php' => ['Contratos', 'contratos.ver'],
+    'agenda.php' => ['Agenda', 'agenda'],
     'mensajes.php' => ['Mensajes', 'mensajes'],
     'pagos.php' => ['Pagos', 'pagos'],
 ];
@@ -26,7 +27,8 @@ $visible = fn(array $items) => array_filter($items, fn($i) => $i[1] === null || 
 $menu = $visible($menu);
 $designMenu = $visible($designMenu);
 $sections = ['inmueble.php' => 'inmuebles.php', 'proyecto.php' => 'proyectos.php', 'pagina.php' => 'paginas.php', 'cliente.php' => 'clientes.php',
-    'contrato.php' => 'contratos.php', 'plantillas.php' => 'contratos.php', 'plantilla.php' => 'contratos.php'];
+    'contrato.php' => 'contratos.php', 'plantillas.php' => 'contratos.php', 'plantilla.php' => 'contratos.php',
+    'acta.php' => 'contratos.php', 'visita.php' => 'agenda.php'];
 $editor = !empty($GLOBALS['needs_editor']);
 $activeItem = $sections[$current] ?? $current;
 ?><!doctype html>
@@ -41,6 +43,7 @@ $activeItem = $sections[$current] ?? $current;
 <link rel="stylesheet" href="<?= e(asset('css/styles.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset('css/admin.css')) ?>">
 <style><?= theme_css() ?></style>
+<?php if (!empty($GLOBALS['needs_map'])): ?><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><?php endif; ?>
 <?php if ($editor): ?><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css"><?php endif; ?>
 </head>
 <body class="admin">

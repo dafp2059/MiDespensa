@@ -13,6 +13,7 @@ $page = [
     'title' => tokens(setting('seo.home_title')) ?: null,
     'description' => tokens(setting('seo.home_description')) ?: 'Inmobiliaria en ' . site('city') . '. Casas, apartamentos, fincas, lotes y locales en venta y arriendo, con asesoría personalizada.',
     'canonical' => url(''),
+    'map' => in_array('mapa', $sections, true),
     'jsonld' => [
         '@context' => 'https://schema.org',
         '@type' => 'RealEstateAgent',

@@ -24,3 +24,11 @@ body { margin: 0; background: #e9ecee; font-family: Georgia, "Times New Roman", 
   .doc { margin: 0; padding: 0; box-shadow: none; max-width: none; }
   @page { margin: 2cm 2.2cm; }
 }
+.doc h2 { font-size: 15px; text-transform: uppercase; margin: 22px 0 8px; border-bottom: 1px solid #999; padding-bottom: 4px; }
+.inv-area { break-inside: avoid-page; }
+.inv-photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 6px 0 12px; }
+.inv-photos img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 1px solid #ccc; }
+.doc-table tr.worse td { background: #fdecea; }
+.doc-table small { color: #555; }
+.signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 56px; font: 13px/1.5 system-ui, sans-serif; }
+@media (max-width: 700px) { .signatures { grid-template-columns: 1fr; } .inv-photos { grid-template-columns: repeat(2, 1fr); } }

@@ -34,6 +34,7 @@ view('admin_header', compact('title'));
         <?php $wa = preg_replace('/\D/', '', (string) $m['phone']); if (strlen($wa) === 10) $wa = '57' . $wa; ?>
         <?php if ($wa): ?><a class="btn btn--small btn--wa" href="https://wa.me/<?= e($wa) ?>?text=<?= e(rawurlencode('Hola ' . explode(' ', $m['name'])[0] . ', te escribimos de ' . site('name') . '.')) ?>" target="_blank" rel="noopener">WhatsApp</a><?php endif; ?>
         <a class="btn btn--small btn--ghost" href="mailto:<?= e($m['email']) ?>">Correo</a>
+        <?php if (can('agenda')): ?><a class="btn btn--small btn--ghost" href="<?= e(url('admin/visita.php?mensaje=' . $m['id'])) ?>">Agendar visita</a><?php endif; ?>
         <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $m['id'] ?>">
           <button class="btn btn--small btn--ghost" name="accion" value="leido"><?= $m['read_at'] ? 'Marcar como no leído' : 'Marcar como leído' ?></button>
           <?php if (can('mensajes.eliminar')): ?><button class="btn btn--small btn--danger" name="accion" value="eliminar" data-confirm="¿Eliminar este mensaje?">Eliminar</button><?php endif; ?>

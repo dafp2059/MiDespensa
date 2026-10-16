@@ -19,6 +19,7 @@ const HOME_SECTIONS = [
     'confianza' => 'Franja "Por qué elegirnos"',
     'destacados' => 'Inmuebles destacados',
     'zonas' => 'Zonas',
+    'mapa' => 'Mapa de inmuebles',
     'propietarios' => 'Vende o arrienda (propietarios)',
     'proyectos' => 'Proyectos',
     'texto' => 'Bloque de texto libre',
@@ -58,7 +59,7 @@ function default_settings(): array
         // Inicio
         'home.sections' => json_encode([
             ['key' => 'banner', 'visible' => 1], ['key' => 'confianza', 'visible' => 1], ['key' => 'destacados', 'visible' => 1],
-            ['key' => 'zonas', 'visible' => 1], ['key' => 'propietarios', 'visible' => 1], ['key' => 'proyectos', 'visible' => 1],
+            ['key' => 'zonas', 'visible' => 1], ['key' => 'mapa', 'visible' => 1], ['key' => 'propietarios', 'visible' => 1], ['key' => 'proyectos', 'visible' => 1],
             ['key' => 'texto', 'visible' => 0], ['key' => 'contacto', 'visible' => 1],
         ]),
         'home.confianza' => json_encode([
@@ -73,6 +74,8 @@ function default_settings(): array
         'home.destacados.count' => '6',
         'home.zonas.eyebrow' => 'Zonas',
         'home.zonas.title' => 'Dónde trabajamos',
+        'home.mapa.eyebrow' => 'Mapa',
+        'home.mapa.title' => 'Encuentra inmuebles cerca de ti',
         'home.propietarios.eyebrow' => 'Propietarios',
         'home.propietarios.title' => '¿Quieres vender o arrendar tu inmueble?',
         'home.propietarios.text' => 'Nos encargamos de todo: avalúo comercial, fotos profesionales, publicación en portales, filtro de interesados, estudio de arrendatarios y acompañamiento legal hasta la firma.',

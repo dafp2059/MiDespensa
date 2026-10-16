@@ -271,20 +271,7 @@ function contract_body_html(array $contract): string
 /** Cuotas mensuales de un arriendo: una por mes con canon + administración. */
 function generate_rent_charges(array $contract): int
 {
-    $amount = (int) $contract['amount'] + (int) $contract['admin_fee'];
-    $label = $contract['admin_fee'] ? 'Canon + administración' : 'Canon';
-    $start = new DateTimeImmutable($contract['start_date']);
-    $count = 0;
-    for ($i = 0; $i < (int) $contract['duration_months']; $i++) {
-        $month = $start->modify('first day of +' . $i . ' month');
-        $day = min((int) $contract['due_day'], (int) $month->format('t'));
-        $due = $month->setDate((int) $month->format('Y'), (int) $month->format('n'), $day);
-        query('INSERT INTO charges (contract_id, concept, description, amount, due_date) VALUES (?, ?, ?, ?, ?)', [
-            $contract['id'], 'canon', $label . ' ' . MONTHS[(int) $month->format('n')] . ' ' . $month->format('Y'), $amount, $due->format('Y-m-d'),
-        ]);
-        $count++;
-    }
-    return $count;
+    return add_rent_charges($contract, new DateTimeImmutable($contract['start_date']), (int) $contract['duration_months']);
 }
 
 function next_contract_code(string $type): string

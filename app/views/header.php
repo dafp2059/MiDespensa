@@ -26,6 +26,7 @@ $phoneDigits = preg_replace('/\D/', '', site('phone'));
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="<?= e(fonts_url()) ?>" rel="stylesheet">
+<?php if (!empty($page['map'])): $GLOBALS['needs_map'] = true; ?><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"><?php endif; ?>
 <link rel="stylesheet" href="<?= e(asset('css/styles.css')) ?>">
 <style><?= theme_css() ?></style>
 <?php if (!empty($page['jsonld'])): ?>

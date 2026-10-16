@@ -21,6 +21,18 @@ $messages = query('SELECT m.*, p.title AS property_title FROM messages m LEFT JO
 $payments = query("SELECT * FROM payments WHERE status <> 'PENDING' OR created_at > (NOW() - INTERVAL 1 DAY)
     ORDER BY created_at DESC LIMIT 5")->fetchAll();
 
+$visitsToday = can('agenda') ? query("SELECT v.*, p.title AS property_title, p.code AS property_code, u.name AS agent_name
+    FROM visits v LEFT JOIN properties p ON p.id = v.property_id LEFT JOIN users u ON u.id = v.agent_user_id
+    WHERE DATE(v.scheduled_at) = CURDATE() AND v.status = 'programada'" . ($user['role'] === 'asesor' ? ' AND v.agent_user_id = ' . (int) $user['id'] : '') . '
+    ORDER BY v.scheduled_at')->fetchAll() : [];
+$adjustmentsSoon = 0;
+if (can('reajustes')) {
+    foreach (query("SELECT id FROM contracts WHERE type = 'arriendo' AND status = 'activo'")->fetchAll(PDO::FETCH_COLUMN) as $cid) {
+        $next = next_adjustment(contract_full((int) $cid));
+        if ($next && $next['days'] <= 45) $adjustmentsSoon++;
+    }
+}
+
 $title = 'Resumen';
 view('admin_header', compact('title'));
 ?>
@@ -35,6 +47,22 @@ view('admin_header', compact('title'));
   <div class="stat"><span>Vendidos o arrendados</span><strong><?= (int) $counts['cerrados'] ?></strong></div>
   <div class="stat"><span>Ocultos</span><strong><?= (int) $counts['ocultos'] ?></strong></div>
 </div>
+
+<?php if ($visitsToday): ?>
+  <section class="admin-card">
+    <h2>Visitas de hoy</h2>
+    <ul class="admin-list">
+      <?php foreach ($visitsToday as $v): ?>
+        <li class="admin-list__row"><span><strong><?= e(hora($v['scheduled_at'])) ?></strong> · <?= e($v['client_name']) ?> · <?= e(($v['property_code'] ? $v['property_code'] . ' ' : '') . ($v['property_title'] ?? '')) ?><br><span class="muted"><?= e($v['agent_name'] ?? 'Sin asesor') ?></span></span>
+          <a class="btn btn--small btn--ghost" href="<?= e(url('admin/visita.php?id=' . $v['id'])) ?>">Abrir</a></li>
+      <?php endforeach; ?>
+    </ul>
+  </section>
+<?php endif; ?>
+
+<?php if ($adjustmentsSoon): ?>
+  <p class="alert alert--info"><?= $adjustmentsSoon ?> contrato(s) de arriendo cumplen año en los próximos 45 días o ya debían reajustarse por IPC. <a href="<?= e(url('admin/contratos.php')) ?>">Ver reajustes</a></p>
+<?php endif; ?>
 
 <?php if (can('cuotas.pagos')): ?>
 <div class="stats">

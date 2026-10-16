@@ -2,6 +2,32 @@
 require __DIR__ . '/../../app/bootstrap.php';
 require_can('contratos.ver');
 
+if (is_post() && input('accion') === 'ipc') {
+    csrf_check();
+    if (can('reajustes')) {
+        $table = [];
+        foreach ((array) ($_POST['ipc_year'] ?? []) as $i => $year) {
+            $value = str_replace(',', '.', trim((string) ($_POST['ipc_value'][$i] ?? '')));
+            if (preg_match('/^\d{4}$/', trim((string) $year)) && is_numeric($value)) {
+                $table[trim((string) $year)] = round((float) $value, 2);
+            }
+        }
+        save_setting('ipc', json_encode($table));
+        flash('success', 'Tabla de IPC guardada.');
+    }
+    redirect('admin/contratos.php#ipc');
+}
+
+// Reajustes que se cumplen en los próximos 45 días (o ya vencidos)
+$dueAdjustments = [];
+foreach (query("SELECT id FROM contracts WHERE type = 'arriendo' AND status = 'activo'")->fetchAll(PDO::FETCH_COLUMN) as $cid) {
+    $ct = contract_full((int) $cid);
+    $next = next_adjustment($ct);
+    if ($next && $next['days'] <= 45) {
+        $dueAdjustments[] = ['contract' => $ct, 'next' => $next];
+    }
+}
+
 $where = ['1 = 1'];
 $params = [];
 if (isset(CONTRACT_TYPES[input('tipo')])) { $where[] = 'ct.type = ?'; $params[] = input('tipo'); }
@@ -49,4 +75,35 @@ view('admin_header', compact('title'));
     </tbody>
   </table>
 </div>
+<?php if ($dueAdjustments): ?>
+  <section class="admin-card">
+    <h2>Reajustes por IPC próximos</h2>
+    <ul class="admin-list">
+      <?php foreach ($dueAdjustments as $d): ?>
+        <li class="admin-list__row"><span><strong><?= e($d['contract']['code']) ?></strong> · <?= e($d['contract']['client_name']) ?><br>
+          <span class="muted"><?= e(fecha_larga($d['next']['date'])) ?> · canon <?= e(money($d['contract']['amount'])) ?><?= $d['next']['max_amount'] ? ' → máximo ' . e(money($d['next']['max_amount'])) : ' · falta IPC ' . $d['next']['ipc_year'] ?></span></span>
+          <a class="btn btn--small btn--ghost" href="<?= e(url('admin/contrato.php?id=' . $d['contract']['id'] . '#reajuste')) ?>">Reajustar</a></li>
+      <?php endforeach; ?>
+    </ul>
+  </section>
+<?php endif; ?>
+
+<?php if (can('reajustes')): ?>
+  <form class="admin-card form" method="post" id="ipc" data-repeater>
+    <?= csrf_field() ?><input type="hidden" name="accion" value="ipc">
+    <h2>Tabla de IPC</h2>
+    <p class="muted">Variación anual del IPC a diciembre que publica el DANE (dane.gov.co). Con ella se calcula el tope de los reajustes. Revisa los valores y agrega cada año nuevo en enero.</p>
+    <div data-rows>
+      <?php $ipcRow = function (string $year = '', string $value = ''): void { ?>
+        <div class="repeater__row">
+          <label class="field field--small"><span class="field__label">Año</span><input name="ipc_year[]" inputmode="numeric" maxlength="4" value="<?= e($year) ?>"></label>
+          <label class="field field--small"><span class="field__label">IPC (%)</span><input name="ipc_value[]" inputmode="decimal" value="<?= e($value) ?>"></label>
+          <div class="repeater__tools"><button class="icon-btn icon-btn--danger" type="button" data-remove aria-label="Quitar">✕</button></div>
+        </div>
+      <?php }; foreach (ipc_table() as $year => $value) $ipcRow((string) $year, str_replace('.', ',', (string) $value)); ?>
+    </div>
+    <template><?php $ipcRow(); ?></template>
+    <div class="owners__actions"><button class="btn btn--small btn--ghost" type="button" data-add>+ Agregar año</button><button class="btn btn--small" type="submit">Guardar IPC</button></div>
+  </form>
+<?php endif; ?>
 <?php view('admin_footer'); ?>

@@ -69,7 +69,10 @@ $pages = max(1, (int) ceil($total / $perPage));
 $current = min($pages, max(1, (int) input('pagina', '1')));
 $offset = ($current - 1) * $perPage;
 
-$properties = query(property_select() . $whereSql . " ORDER BY (p.status = 'disponible') DESC, {$orders[$sort]} LIMIT {$perPage} OFFSET {$offset}", $params)->fetchAll();
+$mapView = input('vista') === 'mapa';
+$properties = query(property_select() . $whereSql . " ORDER BY (p.status = 'disponible') DESC, {$orders[$sort]}"
+    . ($mapView ? ' LIMIT 500' : " LIMIT {$perPage} OFFSET {$offset}"), $params)->fetchAll();
+$points = $mapView ? map_points($properties) : [];
 
 // Título según los filtros: "Apartamentos en arriendo en Medellín"
 $heading = isset(TYPES_PLURAL[$type]) ? TYPES_PLURAL[$type] : 'Inmuebles';
@@ -86,7 +89,8 @@ $page = [
     'active' => 'inmuebles',
     'title' => $heading,
     'description' => $heading . '. Encuentra tu próximo inmueble con ' . site('name') . '.',
-    'noindex' => $q !== '' || $current > 1,
+    'noindex' => $q !== '' || $current > 1 || $mapView,
+    'map' => $mapView,
 ];
 view('header', compact('page'));
 ?>
@@ -107,6 +111,10 @@ view('header', compact('page'));
     <div class="listing__results">
       <div class="listing__bar">
         <p><strong><?= $total ?></strong> <?= $total === 1 ? 'inmueble encontrado' : 'inmuebles encontrados' ?></p>
+        <nav class="view-toggle" aria-label="Forma de ver los inmuebles">
+          <a href="<?= e(query_with(['vista' => null])) ?>"<?= $mapView ? '' : ' aria-current="page"' ?>>Lista</a>
+          <a href="<?= e(query_with(['vista' => 'mapa', 'pagina' => null])) ?>"<?= $mapView ? ' aria-current="page"' : '' ?>><?= icon('pin') ?> Mapa</a>
+        </nav>
         <form method="get" class="listing__sort">
           <?php foreach ($_GET as $key => $value): if ($key === 'orden' || $key === 'pagina' || !is_string($value)) continue; ?>
             <input type="hidden" name="<?= e($key) ?>" value="<?= e($value) ?>">
@@ -121,7 +129,12 @@ view('header', compact('page'));
         </form>
       </div>
 
-      <?php if ($properties): ?>
+      <?php if ($mapView): ?>
+        <?php if ($points): ?>
+          <div class="map-view map-view--tall" data-map="<?= e(json_encode($points, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?>" role="region" aria-label="Mapa de inmuebles"></div>
+        <?php endif; ?>
+        <?php if (count($points) < count($properties)): ?><p class="muted"><?= count($properties) - count($points) ?> inmueble(s) de esta búsqueda aún no tienen ubicación en el mapa. <a href="<?= e(query_with(['vista' => null])) ?>">Verlos en la lista</a>.</p><?php endif; ?>
+      <?php elseif ($properties): ?>
         <div class="grid-cards grid-cards--two">
           <?php foreach ($properties as $p) view('property_card', ['p' => $p]); ?>
         </div>
@@ -133,7 +146,7 @@ view('header', compact('page'));
         </div>
       <?php endif; ?>
 
-      <?php if ($pages > 1): ?>
+      <?php if ($pages > 1 && !$mapView): ?>
         <nav class="pagination" aria-label="Páginas">
           <?php for ($i = 1; $i <= $pages; $i++): ?>
             <a href="<?= e(query_with(['pagina' => $i])) ?>"<?= $i === $current ? ' aria-current="page"' : '' ?>><?= $i ?></a>

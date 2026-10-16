@@ -89,6 +89,9 @@ view('header', compact('page'));
           <strong><?= e($ct['property_title'] ?? '') ?></strong>
           <p class="muted"><?= $ct['type'] === 'arriendo' ? 'Canon ' . e(money($ct['amount'] + $ct['admin_fee'])) . ' al mes · del ' . e(fecha_corta($ct['start_date'])) . ' al ' . e(fecha_corta($ct['end_date'])) : 'Precio ' . e(money($ct['amount'])) ?></p>
           <a class="btn btn--ghost btn--small" href="<?= e(url('mi-cuenta/contrato.php?id=' . $ct['id'])) ?>" target="_blank">Ver contrato</a>
+          <?php foreach (query('SELECT id, type, inspected_at FROM inventories WHERE contract_id = ? ORDER BY inspected_at', [$ct['id']])->fetchAll() as $inv): ?>
+            <a class="btn btn--ghost btn--small" href="<?= e(url('mi-cuenta/acta.php?id=' . $inv['id'])) ?>" target="_blank"><?= e(INVENTORY_TYPES[$inv['type']]) ?> (<?= e(fecha_corta($inv['inspected_at'])) ?>)</a>
+          <?php endforeach; ?>
         </div>
       <?php endforeach; ?>
       <?php if (!$contracts): ?><p class="muted">Aún no tienes contratos registrados.</p><?php endif; ?>

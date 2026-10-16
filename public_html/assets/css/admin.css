@@ -78,6 +78,7 @@ details.admin-card[open] > summary { margin-bottom: 16px; }
   .admin-bar { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 16px; }
   .admin-bar > .logo { order: 0; }
   .admin-bar__user { order: 1; position: absolute; right: 16px; top: 18px; }
+  .admin-bar__me { display: none; }
   .admin-bar { position: relative; }
   .admin-nav { order: 2; flex-wrap: nowrap; overflow-x: auto; min-width: 0; max-width: 100vw; margin: 0 -16px; padding: 0 16px 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .admin-nav a, .admin-nav__label { white-space: nowrap; flex: none; }
@@ -105,3 +106,35 @@ form.inline { display: inline; }
 .code-badge { display: inline-block; min-width: 44px; text-align: center; padding: 4px 8px; border-radius: 8px; background: var(--ink); color: #fff; font-family: var(--font-display); }
 .roles { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
 .user-row.is-inactive { opacity: .6; }
+/* Actas de inventario (pensadas para el celular) */
+.inventory__area > summary { display: flex; justify-content: space-between; }
+.inventory__item { display: grid; grid-template-columns: minmax(160px, 1fr) auto minmax(180px, 1.2fr); gap: 10px 16px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.inventory__name { display: flex; flex-direction: column; }
+.inventory__notes { min-height: 44px; padding: 0 12px; border: 1.5px solid #cfd6da; border-radius: 10px; width: 100%; }
+.state-pick { display: flex; gap: 4px; flex-wrap: wrap; }
+.state-pick__opt input { position: absolute; opacity: 0; }
+.state-pick__opt span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1.5px solid #cfd6da; font-size: .88rem; font-weight: 700; cursor: pointer; background: #fff; }
+.state-pick__opt input:focus-visible + span { outline: 3px solid var(--gold); outline-offset: 2px; }
+.state-pick__opt--bueno input:checked + span { background: var(--accent); border-color: var(--accent); color: #fff; }
+.state-pick__opt--regular input:checked + span { background: #b7791f; border-color: #b7791f; color: #fff; }
+.state-pick__opt--malo input:checked + span { background: var(--danger); border-color: var(--danger); color: #fff; }
+.state-pick__opt--na input:checked + span { background: #5d6b74; border-color: #5d6b74; color: #fff; }
+.inventory__photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin: 14px 0 10px; }
+.inventory__photo { display: flex; flex-direction: column; font-size: .82rem; gap: 4px; }
+.inventory__photo img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; }
+.file-btn { position: relative; overflow: hidden; margin: 6px 0 10px; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.inventory textarea { width: 100%; padding: 12px; border: 1.5px solid #cfd6da; border-radius: 10px; }
+@media (max-width: 760px) { .inventory__item { grid-template-columns: 1fr; } }
+.prorroga { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); align-items: center; } .prorroga input { width: 80px; }
+/* Agenda */
+.agenda-day { margin-bottom: 24px; }
+.agenda-day__title { font-size: 1.05rem; margin: 0 0 10px; }
+.visit { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; padding: 14px 18px; margin-bottom: 10px; border-left: 5px solid var(--accent); }
+.visit--cancelada, .visit--no_asistio { border-left-color: #9aa5ac; opacity: .7; }
+.visit--realizada { border-left-color: var(--gold); }
+.visit__time { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; min-width: 82px; }
+.visit__body { display: flex; flex-direction: column; flex: 1 1 220px; min-width: 0; }
+.visit__actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.visit-summary__when { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; }
+.map-picker { height: 340px; border-radius: 10px; border: 1px solid var(--line); z-index: 0; }

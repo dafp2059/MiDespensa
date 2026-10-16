@@ -42,6 +42,7 @@ if (!empty($GLOBALS['config']['noindex'])) {
 require APP_DIR . '/helpers.php';
 require APP_DIR . '/content.php';
 require APP_DIR . '/contracts.php';
+require APP_DIR . '/operations.php';
 require APP_DIR . '/migrate.php';
 
 // Crea o actualiza las tablas la primera vez que se abre una versión nueva.

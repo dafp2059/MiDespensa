@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/../../app/bootstrap.php';
 require_can('inmuebles.editar');
+$GLOBALS['needs_map'] = true;
 
 $id = (int) input('id');
 $p = $id ? query('SELECT * FROM properties WHERE id = ?', [$id])->fetch() : null;
@@ -148,7 +149,9 @@ view('admin_header', compact('title'));
 
   <fieldset class="admin-card">
     <legend>Ubicación en el mapa y asesor</legend>
-    <p class="muted">Para obtener las coordenadas: en Google Maps haz clic derecho sobre el inmueble y copia los dos números.</p>
+    <p class="muted">Toca el mapa donde está el inmueble (o arrastra el marcador). Si estás en el sitio, usa "Usar mi ubicación".</p>
+    <div class="map-picker" data-map-picker data-lat="latitude" data-lng="longitude" role="application" aria-label="Mapa para ubicar el inmueble"></div>
+    <div class="owners__actions"><button class="btn btn--small btn--ghost" type="button" data-locate><?= icon('pin') ?> Usar mi ubicación</button><button class="btn btn--small btn--ghost" type="button" data-clear-location>Quitar ubicación</button></div>
     <div class="form__row form__row--4">
       <div class="field"><label for="latitude">Latitud</label><input id="latitude" name="latitude" inputmode="decimal" placeholder="6.0605" value="<?= $v('latitude') ?>"></div>
       <div class="field"><label for="longitude">Longitud</label><input id="longitude" name="longitude" inputmode="decimal" placeholder="-75.5020" value="<?= $v('longitude') ?>"></div>

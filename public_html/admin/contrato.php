@@ -46,7 +46,8 @@ $readData = function (string $type): array {
 // Permiso necesario para cada acción del formulario.
 $actionCaps = ['crear' => 'contratos.editar', 'pago_manual' => 'cuotas.pagos', 'reabrir' => 'cuotas.pagos', 'anular' => 'contratos.editar',
     'editar_cuota' => 'contratos.editar', 'agregar_cuota' => 'contratos.editar', 'guardar_texto' => 'contratos.editar',
-    'regenerar' => 'contratos.editar', 'guardar_datos' => 'contratos.editar', 'eliminar' => 'eliminar'];
+    'regenerar' => 'contratos.editar', 'guardar_datos' => 'contratos.editar', 'eliminar' => 'eliminar',
+    'reajustar' => 'reajustes', 'prorrogar' => 'contratos.editar'];
 if (!$contract && !can('contratos.editar')) {
     flash('error', 'Tu usuario no puede crear contratos.');
     redirect('admin/contratos.php');
@@ -145,6 +146,43 @@ if (is_post()) {
             } else {
                 flash('error', 'La cuota necesita valor y fecha.');
             }
+        } elseif ($action === 'reajustar' && $contract['type'] === 'arriendo') {
+            $next = next_adjustment($contract);
+            $date = preg_match('/^\d{4}-\d{2}-\d{2}$/', input('effective_date')) ? input('effective_date') : ($next['date'] ?? null);
+            $ipcYear = (int) date('Y', strtotime((string) $date)) - 1;
+            $ipc = ipc_table()[(string) $ipcYear] ?? null;
+            $old = (int) $contract['amount'];
+            $new = parse_money(input('new_amount'));
+            $max = $ipc !== null ? (int) floor($old * (1 + $ipc / 100)) : null;
+            $recent = $date ? query('SELECT effective_date FROM contract_adjustments WHERE contract_id = ? AND effective_date > (? - INTERVAL 12 MONTH) LIMIT 1', [$id, $date])->fetchColumn() : false;
+            if (!$date || $new <= 0) {
+                flash('error', 'Escribe la fecha y el nuevo canon.');
+            } elseif ($recent) {
+                flash('error', 'Ya hubo un reajuste el ' . fecha_corta($recent) . '. La ley permite uno cada 12 meses.');
+            } elseif ($max === null) {
+                flash('error', "Falta el IPC de {$ipcYear}. Agrégalo en Contratos → Tabla de IPC (dato del DANE) y vuelve a intentarlo.");
+            } elseif ($new > $max) {
+                flash('error', 'El nuevo canon no puede superar ' . money($max) . ' (canon actual + IPC ' . $ipcYear . ' de ' . str_replace('.', ',', (string) $ipc) . ' %), según el artículo 20 de la Ley 820 de 2003.');
+            } else {
+                $percent = round(($new / $old - 1) * 100, 2);
+                query('INSERT INTO contract_adjustments (contract_id, effective_date, old_amount, new_amount, percent, ipc_year, ipc_value, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                    [$id, $date, $old, $new, $percent, $ipcYear, $ipc, current_user()['id']]);
+                $adjId = (int) db()->lastInsertId();
+                query('UPDATE contracts SET amount = ? WHERE id = ?', [$new, $id]);
+                $updated = query("UPDATE charges SET amount = ? WHERE contract_id = ? AND concept = 'canon' AND status = 'pendiente' AND due_date >= ?",
+                    [$new + (int) $contract['admin_fee'], $id, $date])->rowCount();
+                $_SESSION['adjustment_done'] = $adjId;
+                flash('success', 'Canon reajustado de ' . money($old) . ' a ' . money($new) . ' (' . str_replace('.', ',', (string) $percent) . " %). Se actualizaron {$updated} cuota(s) desde el " . fecha_corta($date) . '.');
+            }
+        } elseif ($action === 'prorrogar' && $contract['type'] === 'arriendo') {
+            $months = max(1, min(60, (int) input('months', '12')));
+            $lastDue = query("SELECT MAX(due_date) FROM charges WHERE contract_id = ? AND concept = 'canon'", [$id])->fetchColumn()
+                ?: date('Y-m-d', strtotime($contract['start_date'] . ' -1 month'));
+            $first = (new DateTimeImmutable($lastDue))->modify('first day of next month');
+            add_rent_charges($contract, $first, $months);
+            $end = (new DateTimeImmutable($contract['end_date'] ?: $lastDue))->modify('+' . $months . ' months')->format('Y-m-d');
+            query('UPDATE contracts SET duration_months = duration_months + ?, end_date = ? WHERE id = ?', [$months, $end, $id]);
+            flash('success', "Contrato prorrogado {$months} meses (hasta el " . fecha_corta($end) . "). Se crearon {$months} cuotas con el canon actual.");
         } elseif ($action === 'guardar_texto') {
             query('UPDATE contracts SET body = ? WHERE id = ?', [clean_html((string) ($_POST['body'] ?? '')), $id]);
             flash('success', 'Texto del contrato guardado.');
@@ -325,6 +363,77 @@ $allTemplates = query('SELECT id, name FROM contract_templates WHERE type = ? OR
       <div><button class="btn btn--small" name="accion" value="agregar_cuota">Agregar</button></div>
     </form>
   </details>
+  <?php endif; ?>
+</section>
+
+<?php
+$next = next_adjustment($contract);
+$adjustments = query('SELECT a.*, u.name AS user_name FROM contract_adjustments a LEFT JOIN users u ON u.id = a.created_by WHERE a.contract_id = ? ORDER BY a.effective_date DESC', [$id])->fetchAll();
+$justAdjusted = $_SESSION['adjustment_done'] ?? null;
+unset($_SESSION['adjustment_done']);
+?>
+<?php if ($contract['type'] === 'arriendo'): ?>
+<section class="admin-card" id="reajuste">
+  <h2>Reajuste anual (IPC)</h2>
+  <?php if ($justAdjusted): ?>
+    <p class="alert alert--success">Notifica el reajuste al arrendatario: <a href="<?= e(url('admin/reajuste-carta.php?id=' . $justAdjusted)) ?>" target="_blank">imprimir la carta</a><?php if ($contract['client_phone']): $a = query('SELECT * FROM contract_adjustments WHERE id = ?', [$justAdjusted])->fetch(); ?> o <a href="<?= e(client_whatsapp(['phone' => $contract['client_phone']], 'Hola ' . explode(' ', $contract['client_name'])[0] . ', te informamos que, según el contrato ' . $contract['code'] . ' y el artículo 20 de la Ley 820 de 2003, a partir del ' . fecha_larga($a['effective_date']) . ' el canon se reajusta de ' . money($a['old_amount']) . ' a ' . money($a['new_amount']) . ' (' . str_replace('.', ',', (string) (float) $a['percent']) . ' %, IPC ' . $a['ipc_year'] . '). Tus cuotas en ' . url('mi-cuenta/') . ' ya tienen el nuevo valor.')) ?>" target="_blank" rel="noopener">enviarlo por WhatsApp</a><?php endif; ?>.</p>
+  <?php endif; ?>
+  <?php if ($next): ?>
+    <p>
+      Próximo reajuste: <strong><?= e(fecha_larga($next['date'])) ?></strong>
+      <?= $next['days'] >= 0 ? '(en ' . $next['days'] . ' días)' : '<span class="status status--declined">vencido hace ' . abs($next['days']) . ' días</span>' ?>.
+      <?php if ($next['ipc'] !== null): ?>
+        IPC <?= $next['ipc_year'] ?>: <strong><?= e(str_replace('.', ',', (string) $next['ipc'])) ?> %</strong>. Canon máximo: <strong><?= e(money($next['max_amount'])) ?></strong> (hoy <?= e(money($contract['amount'])) ?>).
+      <?php else: ?>
+        <span class="status status--pending">Falta el IPC de <?= $next['ipc_year'] ?></span> <?php if (can('reajustes')): ?><a href="<?= e(url('admin/contratos.php#ipc')) ?>">agrégalo aquí</a><?php endif; ?>.
+      <?php endif; ?>
+    </p>
+    <?php if (can('reajustes') && $next['ipc'] !== null): ?>
+      <form method="post" class="form__row form__row--4"><?= csrf_field() ?>
+        <div class="field"><label for="effective_date">Aplica desde</label><input id="effective_date" type="date" name="effective_date" value="<?= e($next['date']) ?>"></div>
+        <div class="field"><label for="new_amount">Nuevo canon (COP)</label><input id="new_amount" name="new_amount" inputmode="numeric" data-money value="<?= e(money(round_down_hundred($next['max_amount']), false)) ?>"><span class="muted">Puedes poner menos que el máximo.</span></div>
+        <div><button class="btn" name="accion" value="reajustar" data-confirm="Se actualizará el canon y las cuotas pendientes desde esa fecha. ¿Continuar?">Aplicar reajuste</button></div>
+      </form>
+    <?php endif; ?>
+  <?php endif; ?>
+  <?php if ($adjustments): ?>
+    <h3>Reajustes aplicados</h3>
+    <ul class="admin-list">
+      <?php foreach ($adjustments as $a): ?>
+        <li class="admin-list__row"><span><?= e(fecha_corta($a['effective_date'])) ?>: <?= e(money($a['old_amount'], false)) ?> → <strong><?= e(money($a['new_amount'], false)) ?></strong> (<?= e(str_replace('.', ',', (string) (float) $a['percent'])) ?> % · IPC <?= (int) $a['ipc_year'] ?>)<br><span class="muted"><?= e($a['user_name'] ?? '') ?></span></span>
+          <a class="btn btn--small btn--ghost" href="<?= e(url('admin/reajuste-carta.php?id=' . $a['id'])) ?>" target="_blank">Carta</a></li>
+      <?php endforeach; ?>
+    </ul>
+  <?php endif; ?>
+  <?php if (can('contratos.editar')): ?>
+    <form method="post" class="owners__actions prorroga"><?= csrf_field() ?>
+      <span>Termina el <strong><?= e(fecha_larga($contract['end_date'])) ?></strong>. Prorrogar</span>
+      <input type="number" name="months" min="1" max="60" value="12" aria-label="Meses de prórroga">
+      <span>meses</span>
+      <button class="btn btn--small btn--ghost" name="accion" value="prorrogar" data-confirm="Se crearán las cuotas de la prórroga con el canon actual. ¿Continuar?">Prorrogar</button>
+    </form>
+  <?php endif; ?>
+</section>
+<?php endif; ?>
+
+<?php $inventories = query('SELECT * FROM inventories WHERE contract_id = ? ORDER BY inspected_at, id', [$id])->fetchAll(); ?>
+<section class="admin-card" id="actas">
+  <h2>Actas de entrega y recepción</h2>
+  <?php if ($inventories): ?>
+    <ul class="admin-list">
+      <?php foreach ($inventories as $inv): ?>
+        <li class="admin-list__row"><span><strong><?= e(INVENTORY_TYPES[$inv['type']]) ?></strong> · <?= e(fecha_corta($inv['inspected_at'])) ?></span>
+          <span class="owners__actions"><?php if (can('actas')): ?><a class="btn btn--small btn--ghost" href="<?= e(url('admin/acta.php?id=' . $inv['id'])) ?>">Editar</a><?php endif; ?><a class="btn btn--small btn--ghost" href="<?= e(url('admin/acta-imprimir.php?id=' . $inv['id'])) ?>" target="_blank">Imprimir</a></span></li>
+      <?php endforeach; ?>
+    </ul>
+  <?php else: ?>
+    <p class="muted">Aún no hay actas. Haz el acta de entrega el día que se entregan las llaves.</p>
+  <?php endif; ?>
+  <?php if (can('actas')): ?>
+    <form method="post" action="<?= e(url('admin/acta.php')) ?>" class="owners__actions"><?= csrf_field() ?><input type="hidden" name="accion" value="crear"><input type="hidden" name="contrato" value="<?= $id ?>">
+      <button class="btn btn--small" name="tipo" value="entrega">+ Acta de entrega</button>
+      <button class="btn btn--small btn--ghost" name="tipo" value="recepcion">+ Acta de recepción</button>
+    </form>
   <?php endif; ?>
 </section>
 

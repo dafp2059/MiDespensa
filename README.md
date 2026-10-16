@@ -25,6 +25,12 @@ Web de la inmobiliaria hecha desde cero, sin WordPress. Usa PHP 8, MySQL, HTML, 
 - **Cuotas:** ver pagadas, pendientes y vencidas; registrar pagos en efectivo o transferencia; enviar recordatorios por WhatsApp; recibos.
 - **Plantillas de contrato** editables (modelos de referencia: hay que revisarlos con un abogado).
 
+*Operación diaria*
+- **Actas de entrega y recepción:** se llenan desde el celular en el inmueble, por espacios, con estado, observaciones, fotos y contadores. La de recepción compara con la de entrega y resalta lo que empeoró. Se imprimen para firmar y el cliente las ve en Mi cuenta.
+- **Reajuste por IPC:** cada contrato de arriendo avisa cuándo cumple año, calcula el canon máximo (IPC del año anterior, art. 20 Ley 820 de 2003), aplica el reajuste a las cuotas pendientes, impide más de un reajuste cada 12 meses y genera la carta de notificación. También permite prorrogar el contrato. La tabla de IPC se mantiene en Contratos.
+- **Agenda de visitas:** por asesor, desde cero o desde un mensaje de contacto; confirmación por WhatsApp al cliente y al asesor, archivo para el calendario del celular, alerta de cruce de horarios y visitas del día en el resumen.
+- **Mapa:** en la web (lista o mapa con precios) y en el inicio; en el panel se ubica el inmueble tocando el mapa o con la ubicación del celular. Usa OpenStreetMap, sin costo ni llaves.
+
 *Portal de clientes* (`/mi-cuenta/`): el cliente ve sus cuotas, paga con un clic por Wompi (la cuota se marca pagada sola cuando Wompi aprueba), descarga recibos y ve su contrato.
 
 *Diseño*

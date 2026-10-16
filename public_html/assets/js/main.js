@@ -142,6 +142,90 @@
     });
   }
 
+  // Mapas (Leaflet + OpenStreetMap)
+  var DEFAULT_CENTER = [6.2442, -75.5812]; // Medellín
+  function tiles(map) {
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+  }
+  function escapeHtml(text) {
+    return String(text).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  }
+  if (window.L) {
+    document.querySelectorAll('[data-map]').forEach(function (box) {
+      var points = JSON.parse(box.dataset.map || '[]');
+      var map = window.L.map(box, { scrollWheelZoom: false });
+      tiles(map);
+      var bounds = [];
+      points.forEach(function (p) {
+        var icon = window.L.divIcon({
+          className: 'map-pin map-pin--' + p.op + (p.closed ? ' map-pin--closed' : ''),
+          html: '<span>' + escapeHtml(p.price || p.code || '•') + '</span>',
+          iconSize: null
+        });
+        var popup = '<a class="map-card" href="' + escapeHtml(p.url) + '">'
+          + (p.img ? '<img src="' + escapeHtml(p.img) + '" alt="">' : '')
+          + '<strong>' + escapeHtml(p.title) + '</strong>'
+          + '<span>' + escapeHtml(p.priceFull) + '</span>'
+          + '<small>' + escapeHtml((p.place ? p.place + ' · ' : '') + 'Cód. ' + p.code) + '</small></a>';
+        window.L.marker([p.lat, p.lng], { icon: icon, title: p.title, keyboard: true }).addTo(map).bindPopup(popup, { minWidth: 200 });
+        bounds.push([p.lat, p.lng]);
+      });
+      if (bounds.length > 1) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+      else map.setView(bounds[0] || DEFAULT_CENTER, bounds.length ? 15 : 11);
+    });
+
+    document.querySelectorAll('[data-map-picker]').forEach(function (box) {
+      var lat = document.getElementById(box.dataset.lat);
+      var lng = document.getElementById(box.dataset.lng);
+      var has = lat.value && lng.value;
+      var start = has ? [parseFloat(lat.value.replace(',', '.')), parseFloat(lng.value.replace(',', '.'))] : DEFAULT_CENTER;
+      var map = window.L.map(box).setView(start, has ? 16 : 12);
+      tiles(map);
+      var marker = null;
+      function place(latlng, zoom) {
+        if (!marker) {
+          marker = window.L.marker(latlng, { draggable: true }).addTo(map);
+          marker.on('dragend', function () { place(marker.getLatLng()); });
+        }
+        marker.setLatLng(latlng);
+        lat.value = latlng.lat.toFixed(7);
+        lng.value = latlng.lng.toFixed(7);
+        if (zoom) map.setView(latlng, zoom);
+      }
+      if (has) place(window.L.latLng(start[0], start[1]));
+      map.on('click', function (e) { place(e.latlng); });
+      [lat, lng].forEach(function (input) {
+        input.addEventListener('change', function () {
+          var a = parseFloat(lat.value.replace(',', '.')), b = parseFloat(lng.value.replace(',', '.'));
+          if (!isNaN(a) && !isNaN(b)) place(window.L.latLng(a, b), 16);
+        });
+      });
+      var locate = document.querySelector('[data-locate]');
+      if (locate && navigator.geolocation) {
+        locate.addEventListener('click', function () {
+          locate.disabled = true;
+          navigator.geolocation.getCurrentPosition(function (pos) {
+            locate.disabled = false;
+            place(window.L.latLng(pos.coords.latitude, pos.coords.longitude), 17);
+          }, function () {
+            locate.disabled = false;
+            window.alert('No se pudo obtener tu ubicación. Revisa que el navegador tenga permiso de ubicación.');
+          }, { enableHighAccuracy: true, timeout: 15000 });
+        });
+      } else if (locate) {
+        locate.hidden = true;
+      }
+      var clear = document.querySelector('[data-clear-location]');
+      if (clear) clear.addEventListener('click', function () {
+        if (marker) { map.removeLayer(marker); marker = null; }
+        lat.value = ''; lng.value = '';
+      });
+    });
+  }
+
   // Confirmar acciones peligrosas (eliminar)
   document.querySelectorAll('[data-confirm]').forEach(function (el) {
     el.addEventListener('click', function (event) {

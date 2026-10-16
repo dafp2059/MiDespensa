@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Se ejecuta al entrar al panel; no hace nada si ya está al día.
  */
 
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 function ensure_schema(): void
 {
@@ -38,6 +38,9 @@ function ensure_schema(): void
     }
     if ($version < 4) {
         migrate_v4();
+    }
+    if ($version < 5) {
+        migrate_v5();
     }
     save_setting('schema_version', (string) SCHEMA_VERSION);
     settings(true);
@@ -241,6 +244,92 @@ function migrate_v4(): void
     }
     if (!query("SHOW INDEX FROM properties WHERE Key_name = 'uniq_code'")->fetch()) {
         db()->exec('ALTER TABLE properties ADD UNIQUE KEY uniq_code (code)');
+    }
+}
+
+/** Versión 5: actas de inventario, reajustes por IPC y agenda de visitas. */
+function migrate_v5(): void
+{
+    db()->exec("CREATE TABLE IF NOT EXISTS inventories (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        contract_id INT UNSIGNED NOT NULL,
+        type ENUM('entrega','recepcion') NOT NULL DEFAULT 'entrega',
+        based_on_id INT UNSIGNED NULL,
+        inspected_at DATE NOT NULL,
+        meter_water VARCHAR(40) NULL,
+        meter_power VARCHAR(40) NULL,
+        meter_gas VARCHAR(40) NULL,
+        keys_count VARCHAR(80) NULL,
+        notes TEXT NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        KEY idx_contract (contract_id),
+        CONSTRAINT fk_inventory_contract FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    db()->exec("CREATE TABLE IF NOT EXISTS inventory_items (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        inventory_id INT UNSIGNED NOT NULL,
+        area VARCHAR(80) NOT NULL,
+        item VARCHAR(120) NOT NULL,
+        state VARCHAR(20) NOT NULL DEFAULT 'bueno',
+        notes VARCHAR(500) NULL,
+        prev_state VARCHAR(20) NULL,
+        prev_notes VARCHAR(500) NULL,
+        sort_order INT NOT NULL DEFAULT 0,
+        KEY idx_inventory (inventory_id, sort_order),
+        CONSTRAINT fk_item_inventory FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    db()->exec("CREATE TABLE IF NOT EXISTS inventory_photos (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        inventory_id INT UNSIGNED NOT NULL,
+        area VARCHAR(80) NOT NULL,
+        filename VARCHAR(255) NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_inventory (inventory_id),
+        CONSTRAINT fk_photo_inventory FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    db()->exec("CREATE TABLE IF NOT EXISTS contract_adjustments (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        contract_id INT UNSIGNED NOT NULL,
+        effective_date DATE NOT NULL,
+        old_amount BIGINT UNSIGNED NOT NULL,
+        new_amount BIGINT UNSIGNED NOT NULL,
+        percent DECIMAL(6,2) NOT NULL,
+        ipc_year SMALLINT UNSIGNED NULL,
+        ipc_value DECIMAL(6,2) NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_contract (contract_id),
+        CONSTRAINT fk_adjustment_contract FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    db()->exec("CREATE TABLE IF NOT EXISTS visits (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        property_id INT UNSIGNED NULL,
+        agent_user_id INT UNSIGNED NULL,
+        message_id INT UNSIGNED NULL,
+        client_name VARCHAR(150) NOT NULL,
+        client_phone VARCHAR(40) NULL,
+        client_email VARCHAR(190) NULL,
+        scheduled_at DATETIME NOT NULL,
+        duration_minutes SMALLINT UNSIGNED NOT NULL DEFAULT 60,
+        status ENUM('programada','realizada','cancelada','no_asistio') NOT NULL DEFAULT 'programada',
+        notes TEXT NULL,
+        result TEXT NULL,
+        created_by INT UNSIGNED NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_when (scheduled_at),
+        KEY idx_agent (agent_user_id, scheduled_at),
+        CONSTRAINT fk_visit_property FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE SET NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // IPC anual de Colombia (DANE, variación año corrido a diciembre). Se completa y corrige en el panel.
+    if (!array_key_exists('ipc', settings(true))) {
+        save_setting('ipc', json_encode(['2022' => 13.12, '2023' => 9.28, '2024' => 5.20]));
     }
 }
 

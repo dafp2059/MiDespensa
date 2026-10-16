@@ -43,6 +43,7 @@
   <a class="wa-float" href="<?= e(whatsapp_link(tokens(setting('whatsapp.message')))) ?>" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp"><?= icon('chat') ?></a>
 <?php endif; ?>
 
+<?php if (!empty($GLOBALS['needs_map'])): ?><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script><?php endif; ?>
 <script src="<?= e(asset('js/main.js')) ?>" defer></script>
 </body>
 </html>
