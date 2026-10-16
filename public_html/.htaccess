@@ -29,6 +29,11 @@ ErrorDocument 404 /404.php
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_FILENAME}\.php -f
   RewriteRule ^([a-z0-9-]+)/?$ $1.php [L,QSA]
+
+  # Páginas creadas en el panel: /nosotros, /propietarios…
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^([a-z0-9-]+)/?$ pagina.php?slug=$1 [L,QSA]
 </IfModule>
 
 # Caché del navegador para imágenes, estilos y scripts

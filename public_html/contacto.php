@@ -66,39 +66,13 @@ if (is_post()) {
     redirect($back);
 }
 
-$reason = isset(CONTACT_REASONS[input('motivo')]) ? input('motivo') : '';
-$page = [
-    'active' => 'contacto',
-    'title' => 'Contacto',
-    'description' => 'Escríbenos, llámanos o visítanos. ' . site('address') . ', ' . site('city') . '.',
-];
-view('header', compact('page'));
-?>
-
-<section class="page-head">
-  <div class="container">
-    <p class="eyebrow">Contacto</p>
-    <h1 class="page-head__title">Hablemos de tu próximo inmueble</h1>
-    <p class="page-head__lead">Cuéntanos qué necesitas y te respondemos en menos de 24 horas hábiles.</p>
-  </div>
-</section>
-
-<section class="section section--tight">
-  <div class="container contact-band">
-    <div>
-      <ul class="contact-list contact-list--big">
-        <li><?= icon('chat') ?> <a href="<?= e(whatsapp_link('Hola, quiero información.')) ?>" target="_blank" rel="noopener">WhatsApp <?= e(phone_display(site('phone'))) ?></a></li>
-        <li><?= icon('phone') ?> <a href="tel:+57<?= e(preg_replace('/\D/', '', site('phone'))) ?>"><?= e(phone_display(site('phone'))) ?></a></li>
-        <li><?= icon('mail') ?> <a href="mailto:<?= e(site('email')) ?>"><?= e(site('email')) ?></a></li>
-        <li><?= icon('pin') ?> <span><?= e(site('address')) ?>, <?= e(site('city')) ?></span></li>
-        <?php if (site('hours')): ?><li><?= icon('clock') ?> <span><?= e(site('hours')) ?></span></li><?php endif; ?>
-      </ul>
-      <div class="map">
-        <iframe src="https://maps.google.com/maps?q=<?= e(rawurlencode(site('address') . ', ' . site('city') . ', Colombia')) ?>&amp;z=16&amp;output=embed" title="Mapa de nuestra oficina" loading="lazy"></iframe>
-      </div>
-    </div>
-    <?php view('contact_form', ['reason' => $reason]); ?>
-  </div>
-</section>
-
-<?php view('footer'); ?>
+// La página de contacto se edita en el panel (Diseño > Páginas > Contacto).
+$p = find_page('contacto');
+if (!$p) {
+    require __DIR__ . '/404.php';
+    exit;
+}
+if (isset(CONTACT_REASONS[input('motivo')])) {
+    $p['form_reason'] = input('motivo');
+}
+view('page', ['p' => $p]);

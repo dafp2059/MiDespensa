@@ -40,3 +40,10 @@ if (!empty($GLOBALS['config']['noindex'])) {
 }
 
 require APP_DIR . '/helpers.php';
+require APP_DIR . '/content.php';
+require APP_DIR . '/migrate.php';
+
+// Crea o actualiza las tablas la primera vez que se abre una versión nueva.
+if ((int) (settings()['schema_version'] ?? 0) < SCHEMA_VERSION) {
+    ensure_schema();
+}

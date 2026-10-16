@@ -11,6 +11,7 @@ elseif ($path === '/' ) $file = 'index.php';
 elseif (str_ends_with($path, '/') && is_file($root . $path . 'index.php')) $file = ltrim($path, '/') . 'index.php';
 elseif (is_file($root . $path)) $file = ltrim($path, '/');
 elseif (is_file($root . $path . '.php')) $file = ltrim($path, '/') . '.php';
+elseif (preg_match('#^/([a-z0-9-]+)/?$#', $path, $m)) { $_GET['slug'] = $m[1]; $file = 'pagina.php'; }
 else $file = '404.php';
 $_SERVER['SCRIPT_NAME'] = '/' . $file;
 chdir(dirname($root . '/' . $file));

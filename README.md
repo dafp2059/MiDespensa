@@ -13,10 +13,21 @@ Web de la inmobiliaria hecha desde cero, sin WordPress. Usa PHP 8, MySQL, HTML, 
 - **SEO:** URLs amigables (`/inmueble/casa-campestre-el-retiro`), títulos y descripciones por página, datos estructurados, `sitemap.xml` y redirecciones desde las direcciones viejas de WordPress.
 - Botón flotante de WhatsApp y diseño adaptado a celulares.
 
-**Panel de administración** (`/admin/`)
-- Inmuebles: crear, editar, ocultar, destacar y eliminar, con fotos (se reducen solas a 1800 px), portada, estado, precio y coordenadas.
-- **Ajustes:** subir el logo (y su versión para fondo oscuro), el ícono de la pestaña y cambiar teléfono, WhatsApp, dirección, horario, redes, NIT y razón social sin tocar código.
-- Proyectos, zonas (con foto), mensajes de los formularios (con botón para responder por WhatsApp), pagos de Wompi (exportables a Excel) y usuarios del equipo.
+**Panel de administración** (`/admin/`). Todo se cambia desde aquí, sin tocar código.
+
+*Contenido*
+- **Inmuebles:** crear, editar, ocultar, destacar y eliminar, con fotos (se reducen solas a 1800 px), portada, estado, precio y coordenadas.
+- **Proyectos**, **Zonas** (con foto), **Mensajes** de los formularios (con botón para responder por WhatsApp) y **Pagos** de Wompi (exportables a Excel).
+
+*Diseño*
+- **Banner:** varias diapositivas que cambian solas, cada una con foto, video subido (MP4/WEBM) o video de YouTube, título, texto y dos botones. Se eligen los segundos por diapositiva, el alto y si se muestra el buscador.
+- **Inicio:** mostrar, ocultar y reordenar las secciones, y editar todos sus textos, la franja "Por qué elegirnos", los pasos para propietarios, un bloque de texto libre y el título y la descripción para Google.
+- **Menús:** menú principal, barra superior y las dos columnas del pie de página (texto, enlace, orden y si abre en pestaña nueva), además de los textos del pie.
+- **Páginas:** Nosotros, Contacto, Vende o arrienda, Política de datos y todas las páginas nuevas que quieras, con editor de texto, foto de encabezado y formulario de contacto opcional.
+- **Ajustes:** logo, versión para fondo oscuro, ícono de la pestaña, colores, tipografía, botones de WhatsApp y los datos de la empresa (teléfono, dirección, horario, redes, NIT, razón social).
+- **Usuarios** del equipo.
+
+Al subir una versión nueva del código, la base de datos se actualiza sola la primera vez que alguien abre la web.
 
 ## Estructura
 
@@ -64,6 +75,6 @@ Abre http://localhost:8000. El archivo `tools/servidor-local.php` imita las regl
 
 ## Textos para revisar antes de publicar
 
-- La franja "Por qué elegirnos" del inicio y la página **Nosotros**: confirma que los servicios descritos son los que ofrecen.
+- La franja "Por qué elegirnos" (en **Diseño > Inicio**) y la página **Nosotros** (en **Diseño > Páginas**): confirma que los servicios descritos son los que ofrecen.
 - **Horario de atención**, **NIT** y **razón social**: se cambian en el panel, en **Ajustes**.
 - El **logo**: súbelo en el panel, en **Ajustes**. Mientras tanto se muestra uno provisional.

@@ -10,10 +10,17 @@ $menu = [
     'ubicaciones.php' => 'Zonas',
     'mensajes.php' => 'Mensajes',
     'pagos.php' => 'Pagos',
-    'usuarios.php' => 'Usuarios',
-    'ajustes.php' => 'Ajustes',
 ];
-$sections = ['inmueble.php' => 'inmuebles.php', 'proyecto.php' => 'proyectos.php'];
+$designMenu = [
+    'banner.php' => 'Banner',
+    'inicio.php' => 'Inicio',
+    'menus.php' => 'Menús',
+    'paginas.php' => 'Páginas',
+    'ajustes.php' => 'Ajustes',
+    'usuarios.php' => 'Usuarios',
+];
+$sections = ['inmueble.php' => 'inmuebles.php', 'proyecto.php' => 'proyectos.php', 'pagina.php' => 'paginas.php'];
+$editor = !empty($GLOBALS['needs_editor']);
 $activeItem = $sections[$current] ?? $current;
 ?><!doctype html>
 <html lang="es-CO">
@@ -26,6 +33,8 @@ $activeItem = $sections[$current] ?? $current;
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset('css/styles.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset('css/admin.css')) ?>">
+<style><?= theme_css() ?></style>
+<?php if ($editor): ?><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/quill/1.3.7/quill.snow.min.css"><?php endif; ?>
 </head>
 <body class="admin">
 <?php if ($user): ?>
@@ -36,6 +45,10 @@ $activeItem = $sections[$current] ?? $current;
   <nav class="admin-nav" aria-label="Panel">
     <?php foreach ($menu as $file => $label): ?>
       <a href="<?= e(url('admin/' . $file)) ?>"<?= $activeItem === $file ? ' aria-current="page"' : '' ?>><?= e($label) ?><?php if ($file === 'mensajes.php' && $unread): ?> <span class="pill"><?= $unread ?></span><?php endif; ?></a>
+    <?php endforeach; ?>
+    <span class="admin-nav__label">Diseño</span>
+    <?php foreach ($designMenu as $file => $label): ?>
+      <a href="<?= e(url('admin/' . $file)) ?>"<?= $activeItem === $file ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
     <?php endforeach; ?>
   </nav>
   <div class="admin-bar__user">

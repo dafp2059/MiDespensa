@@ -4,8 +4,11 @@ require __DIR__ . '/../app/bootstrap.php';
 header('Content-Type: application/xml; charset=UTF-8');
 
 $urls = [];
-foreach (['', 'inmuebles', 'inmuebles?operacion=venta', 'inmuebles?operacion=arriendo', 'proyectos', 'propietarios', 'nosotros', 'contacto', 'pagos', 'politica-de-datos'] as $path) {
+foreach (['', 'inmuebles', 'inmuebles?operacion=venta', 'inmuebles?operacion=arriendo', 'proyectos', 'pagos'] as $path) {
     $urls[] = [url($path), null];
+}
+foreach (query('SELECT slug, updated_at FROM pages WHERE published = 1')->fetchAll() as $pg) {
+    $urls[] = [url($pg['slug']), date('Y-m-d', strtotime($pg['updated_at']))];
 }
 foreach (locations() as $loc) {
     $urls[] = [url('inmuebles?ubicacion=' . $loc['slug']), null];

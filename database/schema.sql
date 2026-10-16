@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS payments (
 -- Logo y datos de la empresa editados desde el panel (Ajustes).
 CREATE TABLE IF NOT EXISTS settings (
   name VARCHAR(60) NOT NULL PRIMARY KEY,
-  value TEXT NULL
+  value MEDIUMTEXT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Datos iniciales

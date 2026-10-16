@@ -2,10 +2,6 @@
 require __DIR__ . '/../../app/bootstrap.php';
 require_login();
 
-// Crea la tabla si la base de datos se instaló antes de existir esta sección.
-db()->exec('CREATE TABLE IF NOT EXISTS settings (name VARCHAR(60) NOT NULL PRIMARY KEY, value TEXT NULL)
-    ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
-
 $fields = [
     'name' => ['Nombre comercial', 'text', ''],
     'legal_name' => ['Razón social (como aparece en el RUT)', 'text', ''],
@@ -31,6 +27,19 @@ if (is_post()) {
     foreach ($fields as $key => $_) {
         save_setting('site.' . $key, mb_substr(input($key), 0, 300));
     }
+    $defaults = default_settings();
+    save_setting('theme.accent', valid_color(input('accent'), $defaults['theme.accent']));
+    save_setting('theme.dark', valid_color(input('dark'), $defaults['theme.dark']));
+    save_setting('theme.highlight', valid_color(input('highlight'), $defaults['theme.highlight']));
+    save_setting('theme.fonts', isset(FONT_PAIRS[input('fonts')]) ? input('fonts') : 'moderna');
+    if (input('reset_colors') === '1') {
+        foreach (['theme.accent', 'theme.dark', 'theme.highlight', 'theme.fonts'] as $key) save_setting($key, null);
+    }
+    save_setting('whatsapp.float', input('wa_float') === '1' ? '1' : '0');
+    save_setting('whatsapp.nav_button', input('wa_nav') === '1' ? '1' : '0');
+    save_setting('whatsapp.nav_label', mb_substr(input('wa_label'), 0, 40));
+    save_setting('whatsapp.message', mb_substr(input('wa_message'), 0, 300));
+
     $current = settings(true);
     $errors = [];
     foreach ($logos as $key => [$label]) {
@@ -94,6 +103,31 @@ view('admin_header', compact('title'));
           <?php if ($help): ?><span class="muted"><?= e($help) ?></span><?php endif; ?>
         </div>
       <?php endforeach; ?>
+    </div>
+  </fieldset>
+
+  <fieldset class="admin-card">
+    <legend>Colores y tipografía</legend>
+    <div class="form__row form__row--4">
+      <div class="field"><label for="accent">Color principal (botones, enlaces)</label><input id="accent" name="accent" type="color" value="<?= e(valid_color(setting('theme.accent'), '#0f6b52')) ?>"></div>
+      <div class="field"><label for="dark">Color oscuro (barra superior, pie)</label><input id="dark" name="dark" type="color" value="<?= e(valid_color(setting('theme.dark'), '#13222c')) ?>"></div>
+      <div class="field"><label for="highlight">Color de resalte (etiqueta "Arriendo")</label><input id="highlight" name="highlight" type="color" value="<?= e(valid_color(setting('theme.highlight'), '#c8932e')) ?>"></div>
+      <div class="field"><label for="fonts">Tipografía</label>
+        <select id="fonts" name="fonts"><?php foreach (FONT_PAIRS as $k => $f): ?><option value="<?= $k ?>" <?= setting('theme.fonts') === $k ? 'selected' : '' ?>><?= e($f[0]) ?></option><?php endforeach; ?></select></div>
+    </div>
+    <p class="muted">Consejo: usa colores oscuros o intensos para que el texto blanco de los botones se lea bien.</p>
+    <label class="check"><input type="checkbox" name="reset_colors" value="1"> <span>Volver a los colores y la tipografía originales</span></label>
+  </fieldset>
+
+  <fieldset class="admin-card">
+    <legend>WhatsApp</legend>
+    <div class="form__row">
+      <div class="field"><label for="wa_message">Mensaje que se escribe solo al abrir WhatsApp</label><input id="wa_message" name="wa_message" value="<?= e(setting('whatsapp.message')) ?>"></div>
+      <div class="field"><label for="wa_label">Texto del botón del menú</label><input id="wa_label" name="wa_label" value="<?= e(setting('whatsapp.nav_label')) ?>"></div>
+    </div>
+    <div class="checks">
+      <label class="check"><input type="checkbox" name="wa_float" value="1" <?= setting('whatsapp.float') === '1' ? 'checked' : '' ?>> <span>Botón flotante de WhatsApp en todas las páginas</span></label>
+      <label class="check"><input type="checkbox" name="wa_nav" value="1" <?= setting('whatsapp.nav_button') === '1' ? 'checked' : '' ?>> <span>Botón de WhatsApp en el menú</span></label>
     </div>
   </fieldset>
 
