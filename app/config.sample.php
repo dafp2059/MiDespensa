@@ -9,6 +9,9 @@ return [
     // true solo mientras pruebas: muestra los errores de PHP en pantalla.
     'debug' => false,
 
+    // true en la copia de pruebas (subdominio) para que Google no la muestre.
+    'noindex' => false,
+
     // Base de datos (cPanel > Bases de datos MySQL).
     'db' => [
         'host' => 'localhost',

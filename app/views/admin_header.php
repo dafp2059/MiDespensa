@@ -11,6 +11,7 @@ $menu = [
     'mensajes.php' => 'Mensajes',
     'pagos.php' => 'Pagos',
     'usuarios.php' => 'Usuarios',
+    'ajustes.php' => 'Ajustes',
 ];
 $sections = ['inmueble.php' => 'inmuebles.php', 'proyecto.php' => 'proyectos.php'];
 $activeItem = $sections[$current] ?? $current;
@@ -21,7 +22,7 @@ $activeItem = $sections[$current] ?? $current;
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title><?= e($title) ?> · Panel <?= e(site('name')) ?></title>
-<link rel="icon" href="<?= e(asset('img/favicon.svg')) ?>" type="image/svg+xml">
+<link rel="icon" href="<?= e(favicon_url()) ?>">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= e(asset('css/styles.css')) ?>">
 <link rel="stylesheet" href="<?= e(asset('css/admin.css')) ?>">
@@ -30,8 +31,7 @@ $activeItem = $sections[$current] ?? $current;
 <?php if ($user): ?>
 <header class="admin-bar">
   <a class="logo logo--light" href="<?= e(url('admin/')) ?>">
-    <img src="<?= e(asset('img/logo.svg')) ?>" alt="" width="32" height="32">
-    <span>Panel<small>INGESPRO</small></span>
+    <?= logo_html(true, 32) ?>
   </a>
   <nav class="admin-nav" aria-label="Panel">
     <?php foreach ($menu as $file => $label): ?>

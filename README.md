@@ -15,6 +15,7 @@ Web de la inmobiliaria hecha desde cero, sin WordPress. Usa PHP 8, MySQL, HTML, 
 
 **Panel de administración** (`/admin/`)
 - Inmuebles: crear, editar, ocultar, destacar y eliminar, con fotos (se reducen solas a 1800 px), portada, estado, precio y coordenadas.
+- **Ajustes:** subir el logo (y su versión para fondo oscuro), el ícono de la pestaña y cambiar teléfono, WhatsApp, dirección, horario, redes, NIT y razón social sin tocar código.
 - Proyectos, zonas (con foto), mensajes de los formularios (con botón para responder por WhatsApp), pagos de Wompi (exportables a Excel) y usuarios del equipo.
 
 ## Estructura
@@ -64,5 +65,5 @@ Abre http://localhost:8000. El archivo `tools/servidor-local.php` imita las regl
 ## Textos para revisar antes de publicar
 
 - La franja "Por qué elegirnos" del inicio y la página **Nosotros**: confirma que los servicios descritos son los que ofrecen.
-- **Horario de atención**, **NIT** y **razón social** en `app/config.php`.
-- El **logo** (`public_html/assets/img/logo.svg`) es provisional: reemplázalo por el logo real.
+- **Horario de atención**, **NIT** y **razón social**: se cambian en el panel, en **Ajustes**.
+- El **logo**: súbelo en el panel, en **Ajustes**. Mientras tanto se muestra uno provisional.

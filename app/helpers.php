@@ -61,9 +61,72 @@ function config(string $key, $default = null)
     return $value;
 }
 
+/** Ajustes guardados desde el panel (tabla settings). Si la tabla no existe, devuelve []. */
+function settings(bool $refresh = false): array
+{
+    static $settings = null;
+    if ($settings === null || $refresh) {
+        try {
+            $settings = query('SELECT name, value FROM settings')->fetchAll(PDO::FETCH_KEY_PAIR);
+        } catch (PDOException $e) {
+            $settings = [];
+        }
+    }
+    return $settings;
+}
+
+/** Dato de la empresa: primero lo guardado en el panel, si no, lo de app/config.php. */
 function site(string $key): string
 {
-    return (string) config('site.' . $key, '');
+    $settings = settings();
+    return array_key_exists('site.' . $key, $settings) ? (string) $settings['site.' . $key] : (string) config('site.' . $key, '');
+}
+
+/** Logo de la empresa. $dark = versión para fondos oscuros (pie de página y panel). */
+function logo_html(bool $dark = false, int $size = 40): string
+{
+    $settings = settings();
+    $file = $dark ? ($settings['logo_dark'] ?? $settings['logo'] ?? '') : ($settings['logo'] ?? '');
+    if ($file !== '') {
+        $chip = $dark && empty($settings['logo_dark']) ? ' logo__img--chip' : '';
+        return '<img class="logo__img' . $chip . '" src="' . e(upload_url($file)) . '" alt="' . e(site('name')) . '">';
+    }
+    return '<img src="' . e(asset('img/logo.svg')) . '" alt="" width="' . $size . '" height="' . $size . '">'
+        . '<span>INGESPRO<small>Inmobiliaria</small></span>';
+}
+
+function favicon_url(): string
+{
+    $logo = settings()['favicon'] ?? '';
+    return $logo !== '' ? upload_url($logo) : asset('img/favicon.svg');
+}
+
+/** Guarda un logo subido tal cual (PNG, JPG o WEBP; conserva la transparencia). */
+function save_logo_upload(string $field): ?string
+{
+    $file = $_FILES[$field] ?? null;
+    if (!$file || $file['error'] !== UPLOAD_ERR_OK || $file['size'] > 3 * 1024 * 1024) {
+        return null;
+    }
+    $types = [IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_WEBP => 'webp'];
+    $info = @getimagesize($file['tmp_name']);
+    if (!$info || !isset($types[$info[2]])) {
+        return null;
+    }
+    if (!is_dir(UPLOAD_DIR . '/marca')) {
+        mkdir(UPLOAD_DIR . '/marca', 0755, true);
+    }
+    $filename = 'marca/' . bin2hex(random_bytes(6)) . '.' . $types[$info[2]];
+    return move_uploaded_file($file['tmp_name'], UPLOAD_DIR . '/' . $filename) ? $filename : null;
+}
+
+function save_setting(string $name, ?string $value): void
+{
+    if ($value === null) {
+        query('DELETE FROM settings WHERE name = ?', [$name]);
+    } else {
+        query('INSERT INTO settings (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)', [$name, $value]);
+    }
 }
 
 function db(): PDO

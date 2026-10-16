@@ -30,7 +30,7 @@ $nav = [
 <meta property="og:url" content="<?= e($canonical) ?>">
 <meta property="og:image" content="<?= e($ogImage) ?>">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="<?= e(asset('img/favicon.svg')) ?>" type="image/svg+xml">
+<link rel="icon" href="<?= e(favicon_url()) ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
@@ -59,8 +59,7 @@ $nav = [
 <header class="header">
   <div class="container header__inner">
     <a class="logo" href="<?= e(url('')) ?>" aria-label="<?= e(site('name')) ?>, ir al inicio">
-      <img src="<?= e(asset('img/logo.svg')) ?>" alt="" width="40" height="40">
-      <span>INGESPRO<small>Inmobiliaria</small></span>
+      <?= logo_html() ?>
     </a>
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="menu" aria-label="Abrir menú"><?= icon('menu') ?></button>
     <nav id="menu" class="nav" aria-label="Principal">

@@ -48,3 +48,9 @@ fieldset.admin-card legend { font-family: var(--font-display); font-weight: 700;
 .status--declined, .status--error, .status--voided { background: #fdecea; color: var(--danger); }
 .message__head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
 .message__actions, .message__actions form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.admin-logo { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.admin-logo:last-of-type { border-bottom: 0; padding-bottom: 0; }
+.admin-logo .field { flex: 1 1 280px; }
+.admin-logo__preview { width: 220px; height: 110px; border: 1px dashed #cfd6da; border-radius: 10px; display: grid; place-items: center; padding: 10px; background: #fff; }
+.admin-logo__preview--dark { background: var(--ink); }
+.admin-logo__preview img { max-width: 100%; max-height: 100%; object-fit: contain; }

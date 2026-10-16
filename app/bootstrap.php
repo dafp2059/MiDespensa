@@ -35,5 +35,8 @@ session_start();
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('X-Frame-Options: SAMEORIGIN');
+if (!empty($GLOBALS['config']['noindex'])) {
+    header('X-Robots-Tag: noindex, nofollow');
+}
 
 require APP_DIR . '/helpers.php';

@@ -4,8 +4,7 @@
   <div class="container footer__grid">
     <div>
       <a class="logo logo--light" href="<?= e(url('')) ?>">
-        <img src="<?= e(asset('img/logo.svg')) ?>" alt="" width="40" height="40">
-        <span>INGESPRO<small>Inmobiliaria</small></span>
+        <?= logo_html(true) ?>
       </a>
       <p class="footer__tagline"><?= e(site('tagline')) ?></p>
       <div class="footer__social">

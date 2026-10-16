@@ -112,6 +112,12 @@ CREATE TABLE IF NOT EXISTS payments (
   KEY idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Logo y datos de la empresa editados desde el panel (Ajustes).
+CREATE TABLE IF NOT EXISTS settings (
+  name VARCHAR(60) NOT NULL PRIMARY KEY,
+  value TEXT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Datos iniciales
 INSERT INTO locations (name, slug, featured, sort_order) VALUES
   ('Medellín', 'medellin', 1, 1),
