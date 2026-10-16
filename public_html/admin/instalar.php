@@ -12,6 +12,8 @@ if (is_post()) {
     $name = input('name');
     $email = input('email');
     $password = (string) ($_POST['password'] ?? '');
+    $code = (string) config('setup_code', '');
+    if ($code !== '' && !hash_equals($code, input('setup_code'))) $errors[] = 'El código de instalación no es correcto.';
     if ($name === '') $errors[] = 'Escribe tu nombre.';
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Revisa el correo.';
     if (strlen($password) < 10) $errors[] = 'La contraseña debe tener al menos 10 caracteres.';
@@ -32,6 +34,9 @@ view('admin_header', compact('title'));
   <h1 class="page-head__title">Crear el primer administrador</h1>
   <p class="muted">Este paso solo aparece una vez.</p>
   <?php if ($errors): ?><p class="alert alert--error" role="alert"><?= e(implode(' ', $errors)) ?></p><?php endif; ?>
+  <?php if (config('setup_code')): ?>
+    <div class="field"><label for="setup_code">Código de instalación</label><input id="setup_code" name="setup_code" required autocomplete="off"></div>
+  <?php endif; ?>
   <div class="field"><label for="name">Nombre</label><input id="name" name="name" required value="<?= e(input('name')) ?>"></div>
   <div class="field"><label for="email">Correo</label><input id="email" name="email" type="email" required autocomplete="username" value="<?= e(input('email')) ?>"></div>
   <div class="field"><label for="password">Contraseña (mínimo 10 caracteres)</label><input id="password" name="password" type="password" required minlength="10" autocomplete="new-password"></div>

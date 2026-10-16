@@ -9,6 +9,10 @@ return [
     // true solo mientras pruebas: muestra los errores de PHP en pantalla.
     'debug' => false,
 
+    // Código que pide /admin/instalar.php para crear el primer administrador.
+    // Evita que otra persona lo cree antes que tú. Puedes borrarlo después.
+    'setup_code' => '',
+
     // true en la copia de pruebas (subdominio) para que Google no la muestre.
     'noindex' => false,
 
