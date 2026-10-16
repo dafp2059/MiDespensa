@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /pagos-resultado
+Sitemap: https://ingesproinmobiliaria.com/sitemap.xml

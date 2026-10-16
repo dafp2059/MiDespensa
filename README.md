@@ -1,38 +1,68 @@
-# Mi Despensa
+# INGESPRO Inmobiliaria: web en PHP + MySQL
 
-App web instalable (PWA) para organizar la comida de una persona que vive sola y tiene unos 15 minutos para cocinar. Se instala en el iPhone desde Safari, sin computadora y sin App Store. El código está en [`MiDespensa/`](MiDespensa/).
+Web de la inmobiliaria hecha desde cero, sin WordPress. Usa PHP 8, MySQL, HTML, CSS y un poco de JavaScript, y funciona en cualquier hosting con cPanel.
 
-## Qué hace
+## Qué incluye
 
-- **Menú semanal:** genera un menú de lunes a domingo con recetas de 15 minutos o menos, sin repetir platillos. También puedes elegir cada día a mano.
-- **Recetas:** cada receta trae ingredientes, pasos, tiempo y calorías aproximadas. Puedes agregar recetas propias.
-- **Lista del mercado:** pasa los ingredientes del menú a la lista con un botón. Incluye aseo personal y limpieza con productos sugeridos, filtros (Todo / Comida / Aseo) y opción para compartir por WhatsApp, Notas, etc.
-- **Despensa:** inventario de lo que tienes en casa. Lo comprado en el mercado se suma solo; vas restando lo que usas, te avisa qué está por acabarse y lo agotado pasa solo a la lista. Cada producto puede tener foto.
-- **Calorías:** meta diaria, registro rápido desde recetas, antojos frecuentes o texto libre, y gráfica de los últimos 7 días.
-- **Alimentos excluidos:** de entrada no usa pollo, huevo, camarón ni frijoles. Se cambia en Ajustes.
-- **Respaldo:** exporta e importa tus datos (en iPhone se pueden guardar en Archivos o iCloud).
+**Web pública**
+- **Inicio:** buscador, inmuebles destacados, zonas, sección para propietarios, proyectos y contacto.
+- **Listado de inmuebles** con filtros por operación, tipo, zona, precio, habitaciones y palabra clave, orden y paginación.
+- **Ficha de cada inmueble:** galería, características, video de YouTube, mapa, botón de WhatsApp con mensaje prellenado y formulario para agendar visita.
+- **Proyectos**, **Vende o arrienda** (captación de propietarios), **Nosotros**, **Contacto** y **Política de tratamiento de datos** (Ley 1581).
+- **Pagos en línea con Wompi** (canon, administración, separación…), con página de resultado y webhook.
+- **SEO:** URLs amigables (`/inmueble/casa-campestre-el-retiro`), títulos y descripciones por página, datos estructurados, `sitemap.xml` y redirecciones desde las direcciones viejas de WordPress.
+- Botón flotante de WhatsApp y diseño adaptado a celulares.
 
-Los datos se guardan solo en el teléfono. No hay cuenta ni servidor. Funciona sin internet una vez instalada.
-
-## Publicarla e instalarla desde el iPhone
-
-La app se publica sola en GitHub Pages con el flujo `.github/workflows/pages.yml` cada vez que hay cambios en `master`.
-
-1. En Safari, abre el repositorio en github.com e inicia sesión.
-2. **Settings → General → Danger Zone → Change visibility → Public** (ya hecho). GitHub Pages gratis solo funciona con repositorios públicos. El código no contiene datos personales: tus datos viven solo en tu teléfono.
-3. **Settings → Pages → Source: GitHub Actions.**
-4. **Actions → Publicar Mi Despensa → Run workflow** (o espera al siguiente cambio).
-5. Abre `https://dafp2059.github.io/MiDespensa/` en **Safari**, toca **Compartir → Agregar a pantalla de inicio**.
+**Panel de administración** (`/admin/`)
+- Inmuebles: crear, editar, ocultar, destacar y eliminar, con fotos (se reducen solas a 1800 px), portada, estado, precio y coordenadas.
+- Proyectos, zonas (con foto), mensajes de los formularios (con botón para responder por WhatsApp), pagos de Wompi (exportables a Excel) y usuarios del equipo.
 
 ## Estructura
 
-| Archivo | Contenido |
-|---|---|
-| `MiDespensa/index.html` | Estructura y navegación |
-| `MiDespensa/styles.css` | Estilos, con modo claro y oscuro |
-| `MiDespensa/data.js` | Recetas, categorías, productos de aseo y antojos |
-| `MiDespensa/app.js` | Lógica de la app |
-| `MiDespensa/despensa.js` | Inventario y fotos (las fotos se guardan en IndexedDB) |
-| `MiDespensa/sw.js`, `manifest.webmanifest`, `icons/` | Instalación como app y uso sin conexión |
+```
+app/            Código interno. Va FUERA de public_html.
+  config.php    Tus datos y contraseñas (se crea a partir de config.sample.php).
+  views/        Plantillas: cabecera, pie, tarjetas, formularios, panel.
+public_html/    Lo que se ve en internet.
+  admin/        Panel de administración.
+  assets/       Estilos, JavaScript, logo.
+  uploads/      Fotos que sube el equipo.
+database/schema.sql   Tablas de la base de datos.
+```
 
-Para cambiar o agregar recetas que vienen incluidas, edita `RECETAS_BASE` en `MiDespensa/data.js`.
+## Instalación en cPanel
+
+1. **Copia de seguridad del WordPress actual.** En cPanel > Copias de seguridad, descarga una copia completa antes de tocar nada.
+2. **Base de datos.** En cPanel > Bases de datos MySQL, crea una base de datos y un usuario, y dale todos los privilegios. Luego, en phpMyAdmin, selecciona la base y usa **Importar** con `database/schema.sql`.
+3. **Archivos.** Con el Administrador de archivos o FTP:
+   - Sube la carpeta `app/` a tu carpeta de inicio (al lado de `public_html`, **no dentro**).
+   - Sube el contenido de `public_html/` dentro de `public_html` (después de mover el WordPress a otra carpeta o eliminarlo).
+4. **Configuración.** Copia `app/config.sample.php` como `app/config.php` y completa los datos de la base de datos, de la empresa (NIT y razón social para la política de datos) y las llaves de Wompi.
+5. **Versión de PHP.** En cPanel > Seleccionar versión de PHP, elige 8.1 o superior y activa las extensiones `pdo_mysql`, `gd`, `curl` y `mbstring`.
+6. **Primer usuario.** Entra a `https://ingesproinmobiliaria.com/admin/`. La primera vez te pide crear el administrador.
+7. **Permisos.** La carpeta `public_html/uploads` debe poder escribirse (755).
+
+### Wompi
+
+1. En [comercios.wompi.co](https://comercios.wompi.co) > Desarrolladores, copia la **llave pública**, el **secreto de integridad** y el **secreto de eventos** en `app/config.php`.
+2. En la misma sección, cambia la **URL de eventos** a `https://ingesproinmobiliaria.com/wompi-webhook.php`. Así los pagos se actualizan solos aunque el cliente cierre el navegador.
+3. Prueba primero con las llaves de prueba (`pub_test_…`). La página de pagos muestra un aviso mientras estés en modo de pruebas.
+
+## Probarlo en tu computador
+
+Con PHP 8 y MySQL instalados:
+
+```bash
+mysql -u root -e "CREATE DATABASE ingespro CHARACTER SET utf8mb4"
+mysql -u root ingespro < database/schema.sql
+cp app/config.sample.php app/config.php   # y edita base_url = http://localhost:8000 y los datos de MySQL
+php -S localhost:8000 -t public_html tools/servidor-local.php
+```
+
+Abre http://localhost:8000. El archivo `tools/servidor-local.php` imita las reglas de `.htaccess`, que el servidor de pruebas de PHP no lee.
+
+## Textos para revisar antes de publicar
+
+- La franja "Por qué elegirnos" del inicio y la página **Nosotros**: confirma que los servicios descritos son los que ofrecen.
+- **Horario de atención**, **NIT** y **razón social** en `app/config.php`.
+- El **logo** (`public_html/assets/img/logo.svg`) es provisional: reemplázalo por el logo real.
