@@ -60,6 +60,16 @@ database/schema.sql   Tablas de la base de datos.
 2. En la misma sección, cambia la **URL de eventos** a `https://ingesproinmobiliaria.com/wompi-webhook.php`. Así los pagos se actualizan solos aunque el cliente cierre el navegador.
 3. Prueba primero con las llaves de prueba (`pub_test_…`). La página de pagos muestra un aviso mientras estés en modo de pruebas.
 
+## Verla sin computador (GitHub Codespaces)
+
+Desde el navegador del celular abre:
+
+**https://codespaces.new/dafp2059/MiDespensa?ref=claude/ingespro-web**
+
+Toca **Create codespace** y espera unos 5 minutos la primera vez. Cuando termine, ve a la pestaña **Puertos** (Ports) y abre la dirección del puerto **8000**: ahí está la web funcionando. El panel está en esa misma dirección agregando `/admin`. La primera vez te pide crear el usuario administrador.
+
+Es una copia de pruebas: lo que cargues ahí no pasa al hosting. Cuando termines, detén el codespace en github.com/codespaces para no gastar las horas gratis del mes.
+
 ## Probarlo en tu computador
 
 Con PHP 8 y MySQL instalados:
